@@ -1,3 +1,7 @@
+# ---> Own ignores
+*.log
+*.out
+
 # ---> C
 # Prerequisites
 *.d
