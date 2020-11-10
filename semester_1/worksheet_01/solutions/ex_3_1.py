@@ -9,22 +9,22 @@ def force(r_ij, m_i, m_j, g):
 
 def step_euler(x, v, dt, mass, g, forces):
     _x = x + v*dt
-    _v = v + forces*dt/mass
+    _v = v + forces(x, mass, g)*dt/mass
     return _x, _v
 
 def forces(x, masses, g):
     outforces = x*0
     for i in range(len(masses)-1):
         for j in range(i+1, len(masses)):
-            current = x[:,i], masses[i]
-            other = x[:,j], masses[j]
+            current = x[:,i]
+            other = x[:,j]
             f = force(
-                current[0] - other[0],
-                current[1],
-                other[1],
+                other - current,
+                masses[i],
+                masses[j],
                 g
             )
-            outforces[:,i]+= f
+            outforces[:,i] += f
             outforces[:,j] -= f
     return np.array(outforces)
 
@@ -39,7 +39,7 @@ def run(x, v, dt, masses, g):
         for i in range(int(1/dt)): # one year
             time += dt
             _forces = forces(_x, masses, g)
-            _x, _v = step_euler(_x, _v, dt, masses, g, _forces)
+            _x, _v = step_euler(_x, _v, dt, masses, g, forces)
             outfile.write(outstring.format(
                 time, *_x.T.flatten() # write x1 y1 x2 y2 etc.
             ) + "\n")
