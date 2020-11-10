@@ -16,8 +16,8 @@ set out "plots/ex_3_1.pdf"
 
 #[b'Sun' b'Earth' b'Moon' b'Mars' b'Venus' b'Jupiter']
 
-set xrange [-2:6]
-set yrange [-2:6]
+set xrange [-2:5.5]
+set yrange [-1.5:4]
 plot "outfiles/ex_3_1.out" u 2:3 w p title "Sun" pt 7 lt rgb "yellow",\
 	"outfiles/ex_3_1.out" u 10:11 w l title "Venus" lt rgb "green",\
 	"outfiles/ex_3_1.out" u 4:5 w l title "Earth" lt rgb "blue",\
