@@ -48,7 +48,7 @@ plot "outfiles/ex_3_1.out" u (($6-$4)*1000):(($7-$5)*1000) w l title "Moon (rela
 set key left
 unset xrange
 set yrange [-5:6]
-set xlabel "time [a]"
+set xlabel "time [a] ^{}"
 set ylabel "10^{-3}"
 plot "outfiles/ex_3_1.out" u 1:(($6-$4)*1000) w l title "Moon X (relative)" lt rgb "blue",\
 	"outfiles/ex_3_1.out" u 1:(($7-$5)*1000) w l title "Moon Y (relative)" lt rgb "red"
