@@ -13,20 +13,13 @@ def step_euler(x, v, dt, mass, g, forces):
     return _x, _v
 
 def forces(x, masses, g):
-    outforces = x*0
+    outforces = np.zeros(shape=x.shape) # or x*0
     for i in range(len(masses)-1):
         for j in range(i+1, len(masses)):
-            current = x[:,i]
-            other = x[:,j]
-            f = force(
-                other - current,
-                masses[i],
-                masses[j],
-                g
-            )
+            f = force(x[:,j] - x[:,i], masses[i], masses[j], g)
             outforces[:,i] += f
             outforces[:,j] -= f
-    return np.array(outforces)
+    return outforces
 
 
 def run(x, v, dt, masses, g, integrator):
@@ -50,7 +43,7 @@ if __name__ == "__main__":
     v_0 = npz["v_init"]
     masses = npz["m"]
     g = npz["g"]
-    
+
     print(names)
     for f, (algorithm, dt) in {
     	"ex_3_1.out": (step_euler, 0.0001),
