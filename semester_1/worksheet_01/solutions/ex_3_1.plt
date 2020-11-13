@@ -43,13 +43,19 @@ set xrange [-5:6]
 set yrange [-5:6]
 set xlabel "10^{-3}"
 set ylabel "10^{-3}"
-plot "outfiles/ex_3_1.out" u (($6-$4)*1000):(($7-$5)*1000) w l title "Moon (relative)" lt rgb "grey"
+plot "outfiles/ex_3_1.out" u (($6-$4)*1000):(($7-$5)*1000) w l title "Moon (relative), {/Symbol D}t = 0.0001" lt rgb "grey"
+set xrange [-50:260]
+set yrange [-50:260]
+plot "outfiles/ex_3_1_coarse.out" u (($6-$4)*1000):(($7-$5)*1000) w l title "Moon (relative), {/Symbol D}t = 0.001" lt rgb "grey"
 
 set key left
 unset xrange
 set yrange [-5:6]
 set xlabel "time [a] ^{}"
 set ylabel "10^{-3}"
-plot "outfiles/ex_3_1.out" u 1:(($6-$4)*1000) w l title "Moon X (relative)" lt rgb "blue",\
-	"outfiles/ex_3_1.out" u 1:(($7-$5)*1000) w l title "Moon Y (relative)" lt rgb "red"
+plot "outfiles/ex_3_1.out" u 1:(($6-$4)*1000) w l title "Moon X (relative), {/Symbol D}t = 0.0001" lt rgb "blue",\
+	"outfiles/ex_3_1.out" u 1:(($7-$5)*1000) w l title "Moon Y (relative), {/Symbol D}t = 0.0001" lt rgb "red"
+set yrange [-50:260]
+plot "outfiles/ex_3_1_coarse.out" u 1:(($6-$4)*1000) w l title "Moon X (relative), {/Symbol D}t = 0.001" lt rgb "blue",\
+	"outfiles/ex_3_1_coarse.out" u 1:(($7-$5)*1000) w l title "Moon Y (relative), {/Symbol D}t = 0.001" lt rgb "red"
 

@@ -29,35 +29,37 @@ def forces(x, masses, g):
     return np.array(outforces)
 
 
-def run(x, v, dt, masses, g):
+def run(x, v, dt, masses, g, integrator):
     _x = np.copy(x)
     _v = np.copy(v)
     time = 0
 
-    with open("outfiles/ex_3_1.out", "w") as outfile:
-        outstring = "\t".join(["{:.5f}"]*(len(masses)*2+1))
-        for i in range(int(1/dt)): # one year
-            time += dt
-            _forces = forces(_x, masses, g)
-            _x, _v = step_euler(_x, _v, dt, masses, g, forces)
-            outfile.write(outstring.format(
-                time, *_x.T.flatten() # write x1 y1 x2 y2 etc.
-            ) + "\n")
-            yield time, _x, _v
+    for i in range(int(1/dt)): # one year
+        time += dt
+        #_forces = forces(_x, masses, g)
+        _x, _v = integrator(_x, _v, dt, masses, g, forces)
+        yield time, _x, _v
 
 
 
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    
+if __name__ == "__main__":    
     # init astro objects
     npz = np.load("../files/solar_system.npz")
     names = npz["names"]
-    x_init = npz["x_init"]
-    v_init = npz["v_init"]
+    x_0 = npz["x_init"]
+    v_0 = npz["v_init"]
     masses = npz["m"]
     g = npz["g"]
     
     print(names)
-    list(run(x_init, v_init, 0.0001, masses, g))
+    for f, (algorithm, dt) in {
+    	"ex_3_1.out": (step_euler, 0.0001),
+    	"ex_3_1_coarse.out": (step_euler, 0.001)
+    }.items():
+        with open("outfiles/{}".format(f), "w") as outfile:
+            outstring = "\t".join(["{:.5f}"]*(len(masses)*2+1))
+            for t, x, v in run(x_0, v_0, dt, masses, g, algorithm):
+                outfile.write(outstring.format(
+                    t, *x.T.flatten() # write x1 y1 x2 y2 etc.
+                ) + "\n")
 
