@@ -24,7 +24,6 @@ def run(x, v, dt, mass, gravity, gamma, v_0, filename=None):
             yield time, _x, _v
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
     from scipy.optimize import curve_fit
 
     mass = 2.0
@@ -37,28 +36,25 @@ if __name__ == "__main__":
     
     # part 1
     trajectories = [
-        run(x, v, dt, mass, gravity, 0, 0, "outfiles/ex_2_2.out"),
-        run(x, v, dt, mass, gravity, gamma, 0, "outfiles/ex_2_2_friction.out"),
-        run(x, v, dt, mass, gravity, gamma, -50, "outfiles/ex_2_2_friction_wind.out")
+        run(x, v, dt, mass, gravity, 0, 0,
+            "outfiles/ex_2_2.out"),
+        run(x, v, dt, mass, gravity, gamma, 0,
+            "outfiles/ex_2_2_friction.out"),
+        run(x, v, dt, mass, gravity, gamma, -50,
+            "outfiles/ex_2_2_friction_wind.out")
     ]
     trajectories = [
-        np.array(list(t), dtype=object).T.tolist()
-        for t in trajectories
-    ]
-    trajectories = dict(zip([
-        "No fritction, no wind",
-        "Only friction, no wind",
-        "Friction and wind"
-        ],trajectories))
+        list(t) for t in trajectories
+    ] # converting generator to list, basically an "execute" command
 
 
     # part 2
     v_w = -50
     distances = []
     while v_w > -350:
-        t = np.array(list(run(x, v, dt, mass, gravity, gamma, v_w, "outfiles/lost.out")),
-            dtype=object).T.tolist()
-        d = np.array(t[1])[:,0][-1]
+        t = np.array(list(run(x, v, dt, mass, gravity, gamma, v_w,
+                "outfiles/lost.out")), dtype=object).T.tolist()
+        d = np.array(t[1])[:,0][-1] # last x coordinate => hits ground
         distances.append((v_w, d))
         v_w -= 1
     
@@ -68,7 +64,9 @@ if __name__ == "__main__":
     
     distances = np.array(distances).T
     
-    params, cov = curve_fit(lambda m, b, x: m*x + b, distances[1], distances[0])
-    print(params)
+    params, cov = curve_fit(lambda x, m, b: m*x + b,
+        distances[1], distances[0])
+    print("The wind needs a velocity of v_w = {:.2f}".format(params[1]),
+        "to make the ball land where it started.")
 
 
