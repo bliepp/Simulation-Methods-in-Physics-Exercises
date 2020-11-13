@@ -51,13 +51,6 @@ if __name__ == "__main__":
         "Friction and wind"
         ],trajectories))
 
-    #for key, t in trajectories.items():
-        #pos = np.array(t[1])
-        #plt.plot(pos[:,0], pos[:,1], label=key)
-    
-    #plt.grid()
-    #plt.legend(loc="upper right")
-    #plt.savefig("ex_2_2.pdf")
 
     # part 2
     v_w = -50
@@ -74,16 +67,8 @@ if __name__ == "__main__":
             f.write("{}\t{}\n".format(item[0], item[1]))
     
     distances = np.array(distances).T
-
-
-    def fit(m, b, x):
-        return m*x + b
-
-    params, cov = curve_fit(fit, distances[1], distances[0])
+    
+    params, cov = curve_fit(lambda m, b, x: m*x + b, distances[1], distances[0])
     print(params)
 
-    #plt.clf()
-    #plt.grid()
-    #plt.plot(distances[1], distances[0])
-    #plt.savefig("ex_2_2_test.pdf")
 
