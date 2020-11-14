@@ -13,7 +13,7 @@ def step_euler(x, v, dt, mass, g, forces):
     return _x, _v
 
 def forces(x, masses, g):
-    outforces = np.zeros(shape=x.shape) # or x*0
+    outforces = np.zeros_like(x) # or x*0
     for i in range(len(masses)-1):
         for j in range(i+1, len(masses)):
             f = force(x[:,j] - x[:,i], masses[i], masses[j], g)
