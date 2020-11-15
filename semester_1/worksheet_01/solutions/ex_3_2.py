@@ -5,14 +5,26 @@ import numpy as np
 from ex_3_1 import run, force, forces, step_euler
 
 
+old_forces = None # oh oh, global vars are bad!
+
+
 def step_symplectic_euler(x, v, dt, mass, g, forces):
     # swapped order to make euler symplectic
     _v = v + forces(x, mass, g)*dt/mass
-    _x = x + v*dt
+    _x = x + _v*dt
     return _x, _v
 
 def step_velocity_verlet(x, v, dt, mass, g, forces):
-    pass
+    global old_forces
+    if old_forces is None:
+        old_forces = forces(x, mass, g)
+
+    _x = x + v*dt + 0.5*old_forces*dt*dt/mass
+    _v = v + 0.5*old_forces*dt/mass
+
+    old_forces = forces(_x, mass, g) # recalc forces
+    _v += 0.5*old_forces*dt/mass
+    return _x, _v
 
 
 
