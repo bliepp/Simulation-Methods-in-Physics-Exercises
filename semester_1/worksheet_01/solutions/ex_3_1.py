@@ -22,12 +22,12 @@ def forces(x, masses, g):
     return outforces
 
 
-def run(x, v, dt, masses, g, integrator):
+def run(x, v, dt, masses, g, integrator, years=1.0):
     _x = np.copy(x)
     _v = np.copy(v)
     time = 0
 
-    for i in range(int(1/dt)): # one year
+    for i in range(int(years/dt)):
         time += dt
         #_forces = forces(_x, masses, g)
         _x, _v = integrator(_x, _v, dt, masses, g, forces)
