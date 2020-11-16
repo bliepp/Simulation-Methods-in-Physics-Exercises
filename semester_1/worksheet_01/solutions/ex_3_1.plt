@@ -16,8 +16,8 @@ set out "plots/ex_3_1.pdf"
 
 #[b'Sun' b'Earth' b'Moon' b'Mars' b'Venus' b'Jupiter']
 
-set xlabel "x [10^{-3} au]"
-set ylabel "y [10^{-3} au]"
+set xlabel "x [au]"
+set ylabel "y [au]"
 
 set xrange [-2:5.5]
 set yrange [-1.5:4]
@@ -42,6 +42,9 @@ set yrange [0.5:0.9]
 plot "outfiles/ex_3_1.out" u 4:5 w l title "Earth" lt rgb "blue",\
 	"outfiles/ex_3_1.out" u 6:7 w l title "Moon" lt rgb "grey"
 
+
+set xlabel "x [10^{-3} au]"
+set ylabel "y [10^{-3} au]"
 set xrange [-5:6]
 set yrange [-5:6]
 plot "outfiles/ex_3_1.out" u (($6-$4)*1000):(($7-$5)*1000) w l title "Moon (relative), {/Symbol D}t = 0.0001" lt rgb "grey"
@@ -52,7 +55,7 @@ plot "outfiles/ex_3_1_coarse.out" u (($6-$4)*1000):(($7-$5)*1000) w l title "Moo
 set key left
 unset xrange
 set yrange [-5:6]
-set xlabel "time [a]"
+set xlabel "time [a]^{}" # emüty exponent to format correctly
 set ylabel "position [10^{-3} au]"
 plot "outfiles/ex_3_1.out" u 1:(($6-$4)*1000) w l title "Moon X (relative), {/Symbol D}t = 0.0001" lt rgb "blue",\
 	"outfiles/ex_3_1.out" u 1:(($7-$5)*1000) w l title "Moon Y (relative), {/Symbol D}t = 0.0001" lt rgb "red"
