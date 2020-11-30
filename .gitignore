@@ -1,6 +1,8 @@
 # ---> Own ignores
 *.log
 *.out
+*.vtf
+dont_save/
 
 # ---> C
 # Prerequisites
