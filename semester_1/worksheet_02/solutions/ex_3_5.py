@@ -33,7 +33,12 @@ if __name__ == "__main__":
     # particle positions
 
     # SET UP THE PARTICLE POSITIONS ON A LATTICE HERE
-    # x = ...
+    x = np.empty((2, N_PART))
+    for p in range(N_PART):
+        i = p % N_PER_SIDE
+        j = p // N_PER_SIDE
+        rel = np.array([i/N_PER_SIDE, j/N_PER_SIDE])
+        x[:, p] = rel*BOX
 
     # random particle velocities
     v = 2.0 * np.random.random((2, N_PART)) - 1.0
@@ -49,7 +54,8 @@ if __name__ == "__main__":
         x, v, f = ex_3_4.step_vv(x, v, f, DT, R_CUT, BOX)
 
         positions[i] = x
-        energies[i] = ex_3_4.total_energy(x, v, R_CUT, SHIFT, BOX)
+        E_pot, E_kin = ex_3_4.total_energy(x, v, R_CUT, SHIFT, BOX)
+        energies[i] = E_pot + E_kin
 
     end_time = time.time()
     print(f"{N_PART}\t{end_time - start_time}")

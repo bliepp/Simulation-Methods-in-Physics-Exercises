@@ -6,22 +6,31 @@ import numpy as np
 import ex_3_2
 
 
-def forces(x: np.ndarray) -> np.ndarray:
+def truncated(func, r_ij: np.ndarray, cutoff):
+    if np.sqrt(sum(r_ij*r_ij)) > cutoff:
+        return 0
+    return func(r_ij)
+
+
+def forces(x: np.ndarray, cutoff, box) -> np.ndarray:
     """Compute and return the forces acting onto the particles,
     depending on the positions x."""
+    
     N = x.shape[1]
     f = np.zeros_like(x)
     for i in range(1, N):
         for j in range(i):
             # distance vector
             r_ij = x[:, j] - x[:, i]
-            f_ij = ex_3_2.lj_force(r_ij)
+            r_ij = r_ij - box*np.round(r_ij/box) #np.mod(r_ij, box)
+
+            f_ij = truncated(ex_3_2.lj_force, r_ij, cutoff)
             f[:, i] -= f_ij
             f[:, j] += f_ij
     return f
 
 
-def total_energy(x: np.ndarray, v: np.ndarray) -> np.ndarray:
+def total_energy(x: np.ndarray, v: np.ndarray, cutoff, shift, box) -> np.ndarray:
     """Compute and return the total energy of the system with the
     particles at positions x and velocities v."""
     N = x.shape[1]
@@ -32,21 +41,23 @@ def total_energy(x: np.ndarray, v: np.ndarray) -> np.ndarray:
         for j in range(i):
             # distance vector
             r_ij = x[:, j] - x[:, i]
-            E_pot += ex_3_2.lj_potential(r_ij)
+            r_ij = r_ij - box*np.round(r_ij/box) #np.mod(r_ij, box)
+            pot = truncated(ex_3_2.lj_potential, r_ij, cutoff) 
+            E_pot += pot + shift*bool(pot) # only shift if in range
     # sum up kinetic energy
     for i in range(N):
         E_kin += 0.5 * np.dot(v[:, i], v[:, i])
     return E_pot, E_kin
 
 
-def step_vv(x: np.ndarray, v: np.ndarray, f: np.ndarray, dt: float):
+def step_vv(x: np.ndarray, v: np.ndarray, f: np.ndarray, dt: float, cutoff, box):
     # update positions
     x += v * dt + 0.5 * f * dt * dt
     # half update of the velocity
     v += 0.5 * f * dt
 
     # compute new forces
-    f = forces(x)
+    f = forces(x, cutoff, box)
     # we assume that all particles have a mass of unity
 
     # second half update of the velocity
@@ -55,8 +66,12 @@ def step_vv(x: np.ndarray, v: np.ndarray, f: np.ndarray, dt: float):
     return x, v, f
 
 
+
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
+    R_CUT = 2.5
+    SHIFT = 0.016316891136
+    BOX = np.ones(2)*10.0
+
     DT = 0.01
     T_MAX = 20.0
     N_TIME_STEPS = int(T_MAX / DT)
@@ -65,69 +80,42 @@ if __name__ == "__main__":
     time = 0.0
 
     # particle positions
-    x = np.zeros((2, 5))
-    x[:, 0] = [0.0, 0.0]
-    x[:, 1] = [5.0, 0.3]
-    x[:, 2] = [8.0, 1.8]
-    x[:, 3] = [10.9, 0.3]
-    x[:, 4] = [12.0, 7.0]
+    x = np.zeros((2, 2))
+    x[:, 0] = [3.9, 3.0]
+    x[:, 1] = [6.1, 5.0]
 
     # particle velocities
-    v = np.zeros((2, 5))
-    v[:, 0] = [2.0, 0.0]
-    v[:, 1] = [0.0, 0.0]
-    v[:, 2] = [0.0, 0.0]
-    v[:, 3] = [0.0, 0.0]
-    v[:, 4] = [0.0, 0.0]
+    v = np.zeros((2, 2))
+    v[:, 0] = [-2.0, -2.0]
+    v[:, 1] = [2.0, 2.0]
 
-    f = forces(x)
+    f = forces(x, R_CUT, BOX)
 
     N_PART = x.shape[1]
-
-    positions = np.full((N_TIME_STEPS, 2, N_PART), np.nan)
-    energies = np.full((N_TIME_STEPS), np.nan)
-
-
+    
     # main loop
     with ExitStack() as stack:
-        vtffile = stack.enter_context(open('outfiles/ljbillards.vtf', 'w'))
-        outfile = stack.enter_context(open("outfiles/ex_3_3.out", "w"))
+        vtffile = stack.enter_context(open('outfiles/ljbillards_pbc.vtf', 'w'))
+        outfile = stack.enter_context(open("outfiles/ex_3_4.out", "w"))
 
         # write the structure of the system into the file:
         # N particles ("atoms") with a radius of 0.5
         vtffile.write(f'atom 0:{N_PART - 1} radius 0.5\n')
+        vtffile.write(f'pbc {BOX[0]} {BOX[1]} 10.0\n')
         outfile.write("#TIME\tE_POT\tE_KIN\tPARTSXY\n")
         for i in range(N_TIME_STEPS):
-            x, v, f = step_vv(x, v, f, DT)
+            x, v, f = step_vv(x, v, f, DT, R_CUT, BOX)
             time += DT
 
-            positions[i, :2] = x
-            E_pot, E_kin = total_energy(x, v)
-            energies[i] = E_pot + E_kin
+            E_pot, E_kin = total_energy(x, v, R_CUT, SHIFT, BOX)
 
             # write out that a new timestep starts
             vtffile.write('timestep\n')
             outfile.write(f"{time:.4f}\t{E_pot:.4f}\t{E_kin:.4f}")
             # write out the coordinates of the particles
+            #print(time)
             for p in x.T:
                 vtffile.write(f"{p[0]} {p[1]} 0.\n")
                 outfile.write(f"\t{p[0]:.4f}\t{p[1]:.4f}")
             outfile.write("\n")
 
-    traj = np.array(positions)
-
-    fig, (ax1, ax2) = plt.subplots(2, 1)
-    for i in range(N_PART):
-        ax1.plot(positions[:, 0, i], positions[:, 1, i], label='{}'.format(i))
-    ax1.set_title('Trajectory')
-    ax1.set_aspect('equal')
-    ax1.set_xlabel('x position')
-    ax1.set_ylabel('y position')
-    ax1.legend()
-
-    ax2.set_xlabel("Time step")
-    ax2.set_ylabel("Total energy")
-    ax2.plot(energies)
-    ax2.set_title('Total energy')
-    #plt.show()
-    plt.savefig("plots/py_ex_3_3.pdf")

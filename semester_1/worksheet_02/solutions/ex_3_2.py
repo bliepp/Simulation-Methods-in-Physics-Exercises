@@ -9,13 +9,13 @@ SIGMA = 1
 
 
 def lj_potential(r_ij: np.ndarray) -> float:
-    abs_r_ij = np.sqrt(sum(r_ij**2))
+    abs_r_ij = np.sqrt(sum(r_ij*r_ij))
     part = (SIGMA/abs_r_ij)**6
     return 4*EPSILON*(part*part - part)
 
 
 def lj_force(r_ij: np.ndarray) -> np.ndarray:
-    abs_r_ij = np.sqrt(sum(r_ij**2))
+    abs_r_ij = np.sqrt(sum(r_ij*r_ij))
     part = (SIGMA/abs_r_ij)**6
     return 24*EPSILON*(r_ij/(abs_r_ij*abs_r_ij))*(2*part*part - part)
 
