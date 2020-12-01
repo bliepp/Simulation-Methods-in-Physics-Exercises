@@ -12,6 +12,22 @@ def truncated(func, r_ij: np.ndarray, cutoff):
     return func(r_ij)
 
 
+def minimum_image(r_ij, box):
+        """
+        equivalent of
+            r_ij = r_ij - box*np.round(r_ij/box)
+        proof:
+            let a = r - l*round(r/l)
+            let b = (r+0.5l mod l) - 0.5l
+                  = r + 0.5l - l*floor(r+0.5l / l) - 0.5l
+                  = r - l*floor(r+0.5l / l)
+                  = r - l*round(r/l) = a
+        r_ij + 0.5box because module then checks if
+        particle is over the boxes center.
+        """
+        return np.mod(r_ij+0.5*box, box) - 0.5*box
+
+
 def forces(x: np.ndarray, cutoff, box) -> np.ndarray:
     """Compute and return the forces acting onto the particles,
     depending on the positions x."""
@@ -22,7 +38,7 @@ def forces(x: np.ndarray, cutoff, box) -> np.ndarray:
         for j in range(i):
             # distance vector
             r_ij = x[:, j] - x[:, i]
-            r_ij = r_ij - box*np.round(r_ij/box) #np.mod(r_ij, box)
+            r_ij = minimum_image(r_ij, box)
 
             f_ij = truncated(ex_3_2.lj_force, r_ij, cutoff)
             f[:, i] -= f_ij
@@ -41,7 +57,8 @@ def total_energy(x: np.ndarray, v: np.ndarray, cutoff, shift, box) -> np.ndarray
         for j in range(i):
             # distance vector
             r_ij = x[:, j] - x[:, i]
-            r_ij = r_ij - box*np.round(r_ij/box) #np.mod(r_ij, box)
+            r_ij = minimum_image(r_ij, box)
+
             pot = truncated(ex_3_2.lj_potential, r_ij, cutoff) 
             E_pot += pot + shift*bool(pot) # only shift if in range
     # sum up kinetic energy
