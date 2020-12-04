@@ -21,6 +21,7 @@ class Simulation:
         # computed in e_pot_ij_matrix
         self.e_pot_ij_matrix = np.zeros((self.n, self.n))
 
+    @njit
     def distances(self):
         self.r_ij_matrix = np.repeat([self.x.transpose()], self.n, axis=0)
         self.r_ij_matrix -= np.transpose(self.r_ij_matrix, axes=[1, 0, 2])
@@ -31,6 +32,7 @@ class Simulation:
                 np.rint(image_offsets[:, :, nth_box_component] / box_component) * box_component
         self.r_ij_matrix -= image_offsets
 
+    @njit
     def energies(self):
         r = np.linalg.norm(self.r_ij_matrix, axis=2)
         with np.errstate(all='ignore'):
@@ -52,6 +54,7 @@ class Simulation:
                 self.f_ij_matrix[:, :, dim] *= np.where(r != 0.0, fac / r, 0.0)
         self.f = np.sum(self.f_ij_matrix, axis=0).transpose()
 
+    @njit
     def energy(self):
         """Compute and return the energy components of the system."""
         # compute energy matrix
@@ -59,10 +62,12 @@ class Simulation:
         # TODO compute interaction energy from self.e_pot_ij_matrix
         # TODO calculate kinetic energy from the velocities self.v and return both energy components
 
+    @njit
     def temperature(self):
         #TODO
         pass
 
+    @njit
     def pressure(self):
         #TODO
 
