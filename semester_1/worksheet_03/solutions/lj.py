@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 from numba import njit, prange
+import numpy as np
+import itertools
+import pickle
 
 # introduce classes to the students
 class Simulation:
@@ -21,7 +24,7 @@ class Simulation:
         # computed in e_pot_ij_matrix
         self.e_pot_ij_matrix = np.zeros((self.n, self.n))
 
-    @njit
+    
     def distances(self):
         self.r_ij_matrix = np.repeat([self.x.transpose()], self.n, axis=0)
         self.r_ij_matrix -= np.transpose(self.r_ij_matrix, axes=[1, 0, 2])
@@ -32,14 +35,14 @@ class Simulation:
                 np.rint(image_offsets[:, :, nth_box_component] / box_component) * box_component
         self.r_ij_matrix -= image_offsets
 
-    @njit
+    
     def energies(self):
         r = np.linalg.norm(self.r_ij_matrix, axis=2)
         with np.errstate(all='ignore'):
             self.e_pot_ij_matrix = np.where((r != 0.0) & (r < self.r_cut),
                                             4.0 * (np.power(r, -12.) - np.power(r, -6.)) + self.shift, 0.0)
 
-    @njit(parallel=True)
+
     def forces(self):
         # first update the distance vector matrix, obeying minimum image convention
         self.distances()
@@ -48,31 +51,49 @@ class Simulation:
         with np.errstate(all='ignore'):
             fac = np.where((r != 0.0) & (r < self.r_cut),
                            4.0 * (12.0 * np.power(r, -13.) - 6.0 * np.power(r, -7.)), 0.0)
-        #for dim in range(self.n_dims): # non-numba
-        for dim in prange(self.n_dims): # numba
+        for dim in range(self.n_dims):
             with np.errstate(invalid='ignore'):
                 self.f_ij_matrix[:, :, dim] *= np.where(r != 0.0, fac / r, 0.0)
         self.f = np.sum(self.f_ij_matrix, axis=0).transpose()
 
-    @njit
+    
+    def kinetic_energy(self):
+        return sum(sum(self.v*self.v))*0.5
+    
+    
     def energy(self):
         """Compute and return the energy components of the system."""
         # compute energy matrix
         self.energies()
-        # TODO compute interaction energy from self.e_pot_ij_matrix
-        # TODO calculate kinetic energy from the velocities self.v and return both energy components
+        # compute interaction energy from self.e_pot_ij_matrix
+        e_pot = sum(itertools.chain(*self.e_pot_ij_matrix))
+        # calculate kinetic energy from the velocities self.v and return both energy components
+        e_kin = self.kinetic_energy()
+        
+        return e_pot, e_kin
 
-    @njit
-    def temperature(self):
-        #TODO
-        pass
+    
+    def temperature(self):  
+        k_B = 1
+        return 2*self.kinetic_energy()/(self.n_dims*self.n*k_B)
 
-    @njit
+    
     def pressure(self):
-        #TODO
+        e_kin = self.kinetic_energy()
+        
+        force_part = 0
+        for i in range(1, self.n):
+            for j in range(i):
+                f_ij = self.f_ij_matrix[i, j]
+                r_ij = self.r_ij_matrix[i, j]
+                force_part += np.dot(f_ij, r_ij)
+        
+        A = np.prod(self.box)
+        return (e_kin + 0.5*force_part)/A
 
     def rdf(self):
         #TODO
+        pass
 
     def propagate(self):
         # update positions
@@ -98,13 +119,9 @@ def write_checkpoint(state, path, overwrite=False):
 
 if __name__ == "__main__":
     import argparse
-    import pickle
-    import itertools
     import logging
-
     import os.path
 
-    import numpy as np
     import scipy.spatial  # todo: probably remove in template
     import tqdm
 
@@ -125,6 +142,7 @@ if __name__ == "__main__":
 
     DT = 0.01
     T_MAX = 100.0
+    #T_MAX = 1000.0
     N_TIME_STEPS = int(T_MAX / DT)
 
     R_CUT = 2.5
@@ -157,12 +175,21 @@ if __name__ == "__main__":
         logging.info("Reading state from checkpoint.")
         with open(args.cpt, 'rb') as fp:
             data = pickle.load(fp)
+        
+        positions = data['positions']
+        energies = data['energies']
+        pressures = data['pressures']
+        temperatures = data['temperatures']
+        rdfs = data['rdfs']
+        x = positions[-1].copy()
+        v = data['last_v']
+            
 
     sim = Simulation(DT, x, v, BOX, R_CUT, SHIFT)
 
     # If checkpoint is used, also the forces have to be reloaded!
     if args.cpt and os.path.exists(args.cpt):
-        sim.f = f
+        sim.forces()
 
     for i in tqdm.tqdm(range(N_TIME_STEPS)):
         sim.propagate()
@@ -175,5 +202,12 @@ if __name__ == "__main__":
             rdfs.append(sim.rdf())
 
     if args.cpt:
-        state = {'energies': energies}
+        state = {
+            'last_v': sim.v,
+            'positions': positions,
+            'pressures': pressures,
+            'energies': energies,
+            'temperatures': temperatures,
+            'rdfs': rdfs
+            }
         write_checkpoint(state, args.cpt, overwrite=True)
