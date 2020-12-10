@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from numba import njit, prange
+from numba import jit, njit, prange
 import numpy as np
 import itertools
 import pickle
@@ -24,7 +24,9 @@ class Simulation:
         # computed in e_pot_ij_matrix
         self.e_pot_ij_matrix = np.zeros((self.n, self.n))
 
-    
+        self.kinetic_energy = lambda: sum(sum(self.v*self.v))*0.5
+
+
     def distances(self):
         self.r_ij_matrix = np.repeat([self.x.transpose()], self.n, axis=0)
         self.r_ij_matrix -= np.transpose(self.r_ij_matrix, axes=[1, 0, 2])
@@ -35,7 +37,7 @@ class Simulation:
                 np.rint(image_offsets[:, :, nth_box_component] / box_component) * box_component
         self.r_ij_matrix -= image_offsets
 
-    
+
     def energies(self):
         r = np.linalg.norm(self.r_ij_matrix, axis=2)
         with np.errstate(all='ignore'):
@@ -56,11 +58,7 @@ class Simulation:
                 self.f_ij_matrix[:, :, dim] *= np.where(r != 0.0, fac / r, 0.0)
         self.f = np.sum(self.f_ij_matrix, axis=0).transpose()
 
-    
-    def kinetic_energy(self):
-        return sum(sum(self.v*self.v))*0.5
-    
-    
+
     def energy(self):
         """Compute and return the energy components of the system."""
         # compute energy matrix
@@ -72,12 +70,12 @@ class Simulation:
         
         return e_pot, e_kin
 
-    
+
     def temperature(self):  
         k_B = 1
         return 2*self.kinetic_energy()/(self.n_dims*self.n*k_B)
 
-    
+
     def pressure(self):
         e_kin = self.kinetic_energy()
         
@@ -142,7 +140,7 @@ if __name__ == "__main__":
 
     DT = 0.01
     T_MAX = 100.0
-    #T_MAX = 1000.0
+    T_MAX = 200.0
     N_TIME_STEPS = int(T_MAX / DT)
 
     R_CUT = 2.5
@@ -175,7 +173,7 @@ if __name__ == "__main__":
         logging.info("Reading state from checkpoint.")
         with open(args.cpt, 'rb') as fp:
             data = pickle.load(fp)
-        
+
         positions = data['positions']
         energies = data['energies']
         pressures = data['pressures']
@@ -183,6 +181,8 @@ if __name__ == "__main__":
         rdfs = data['rdfs']
         x = positions[-1].copy()
         v = data['last_v']
+        DT = data["dt"]
+        SAMPLING_STRIDE = data["sampling_stride"]
             
 
     sim = Simulation(DT, x, v, BOX, R_CUT, SHIFT)
@@ -203,6 +203,8 @@ if __name__ == "__main__":
 
     if args.cpt:
         state = {
+            'dt': DT, # saving for convenience
+            'sampling_stride': SAMPLING_STRIDE, # saving for convenience
             'last_v': sim.v,
             'positions': positions,
             'pressures': pressures,
