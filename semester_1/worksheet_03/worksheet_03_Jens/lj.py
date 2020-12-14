@@ -64,7 +64,7 @@ class Simulation:
         #            self.f_ij_matrix[i, j] =  self.f_ij_matrix[i,j]/abs * FMAX
         self.f = np.sum(self.f_ij_matrix, axis=0).transpose()
         if self.FMAX:
-            for i in range(0,self.n):
+            for i in range(0,len(self.f)):
                 abs = scipy.linalg.norm(self.f)
                 if abs > self.FMAX:
                     self.f[i] = self.f[i]/abs * self.FMAX
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--FMAX',
         type=float,
-        help='Maximum Force during Warmup')
+        help='Maximum Force during Warmup.')
     args = parser.parse_args()
 
     np.random.seed(2)
@@ -215,6 +215,8 @@ if __name__ == "__main__":
 
     if args.cpt:
         state = {
+            'dt': DT, # saving for convenience
+            'sampling_stride': SAMPLING_STRIDE, # saving for convenience
             'energies': energies,
             'positions': positions,
             'pressures': pressures,
