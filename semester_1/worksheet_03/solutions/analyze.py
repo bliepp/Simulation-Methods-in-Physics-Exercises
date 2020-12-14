@@ -53,10 +53,10 @@ if __name__ == "__main__":
 
 
     with PdfPages("plots/ex_5.pdf") as pdf:
-        for observable, scale in {
-            "pressures": (-0.25,0.42),
-            "temperatures": (0.1,0.88),
-            "energies": (-145.0,-455.0)
+        for observable, invert in {
+            "pressures": False, #(-0.25,0.42),
+            "temperatures": False, #(0.1,0.88),
+            "energies": True, #(-145.0,-455.0)
         }.items():
             d = data[observable]
             time = np.linspace(0, len(d)*DT*SAMPLING_STRIDE, len(d))
@@ -65,7 +65,6 @@ if __name__ == "__main__":
                 print(f"Plotting {observable}, M = {wsize}")
                 avg = list(running_average(d, wsize))
 
-                plt.ylim(*scale)
                 plt.xlabel("time t")
                 plt.ylabel(f"{singular[observable]}")
                 plt.plot(time, avg,
