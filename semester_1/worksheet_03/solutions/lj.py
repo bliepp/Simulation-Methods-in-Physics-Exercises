@@ -25,6 +25,7 @@ class Simulation:
         self.e_pot_ij_matrix = np.zeros((self.n, self.n))
 
         self.kinetic_energy = lambda: sum(sum(self.v*self.v))*0.5
+        self.k_B = 1
 
 
     def distances(self):
@@ -72,8 +73,7 @@ class Simulation:
 
 
     def temperature(self):  
-        k_B = 1
-        return 2*self.kinetic_energy()/(self.n_dims*self.n*k_B)
+        return 2*self.kinetic_energy()/(self.n_dims*self.n*self.k_B)
 
 
     def pressure(self):
@@ -92,6 +92,11 @@ class Simulation:
     def rdf(self):
         #TODO
         pass
+
+    def velocity_rescaling(self, T_des):
+        a = (self.n*self.n_dims*self.k_B*T_des)/(2*self.kinetic_energy())
+        a = np.sqrt(a)
+        self.v *= a
 
     def propagate(self):
         # update positions
@@ -131,16 +136,21 @@ if __name__ == "__main__":
         type=int,
         help='Number of particles per lattice side.')
     parser.add_argument(
-        '--cpt',
+        '--cpt', "--chkpt", "-c",
         type=str,
         help='Path to checkpoint.')
+    parser.add_argument(
+        "--nvt_rescale", "--nvt",
+        type=float,
+        metavar="DESIRED_TEMPERATURE",
+        help="Run the simulation with velocity rescaling.")
     args = parser.parse_args()
 
     np.random.seed(2)
 
     DT = 0.01
     T_MAX = 100.0
-    T_MAX = 200.0
+    T_MAX = 1000.0
     N_TIME_STEPS = int(T_MAX / DT)
 
     R_CUT = 2.5
@@ -193,6 +203,8 @@ if __name__ == "__main__":
 
     for i in tqdm.tqdm(range(N_TIME_STEPS)):
         sim.propagate()
+        if args.nvt_rescale:
+            sim.velocity_rescaling(args.nvt_rescale)
 
         if i % SAMPLING_STRIDE == 0:
             positions.append(sim.x.copy())
