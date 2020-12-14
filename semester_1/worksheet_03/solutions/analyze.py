@@ -14,8 +14,9 @@ with open(args.file, 'rb') as fp:
     data = pickle.load(fp)
 
 
-def avg_after_time(t_eq):
-    pass
+def avg_after_time(arr, t_eq):
+    slic = arr[:int(t_eq/(DT*SAMPLING_STRIDE))]
+    return np.nansum(slic)/len(slic)
 
 
 def running_average(O, M):
@@ -52,29 +53,56 @@ if __name__ == "__main__":
     }
 
 
-    with PdfPages("plots/ex_5.pdf") as pdf:
-        for observable, invert in {
-            "pressures": False, #(-0.25,0.42),
-            "temperatures": False, #(0.1,0.88),
-            "energies": True, #(-145.0,-455.0)
-        }.items():
+    with PdfPages("plots/ex_6.pdf") as pdf:
+        for observable, invert_y in {
+            "pressures": False,
+            "temperatures": False,
+            "energies": True
+            }.items():
             d = data[observable]
-            time = np.linspace(0, len(d)*DT*SAMPLING_STRIDE, len(d))
+            times = np.linspace(0, len(d)*DT*SAMPLING_STRIDE, len(d))
 
-            for wsize, color in ((10,"tab:blue"), (100, "red")):
+            # plot running averages
+            for wsize, color in (
+                #(0, "tab:blue"),
+                (10,"red"), 
+                (100, "black"),
+                ):
                 print(f"Plotting {observable}, M = {wsize}")
                 avg = list(running_average(d, wsize))
 
                 plt.xlabel("time t")
                 plt.ylabel(f"{singular[observable]}")
-                plt.plot(time, avg,
-                    label=f"M = {wsize}",
-                    linewidth=0.5*np.log10(wsize),
-                    color=color
+                plotsettings = {
+                    "label": "Raw observable",
+                    "color": color
+                    }
+                if wsize != 0:
+                    plotsettings["label"] = f"M = {wsize}"
+                    plotsettings["linewidth"] = 0.5*np.log10(wsize)
+                
+                plt.plot(times, avg,
+                    **plotsettings
                     )
 
-                plt.legend(loc="lower right")
+                if invert_y:
+                    plt.legend(loc="upper right")
+                else:
+                    plt.legend(loc="lower right")
 
             pdf.savefig()
             plt.close()
+
+            print(f"Plotting average of {observable}")
+            # plot average
+            #avg = np.empty_like(times)
+            #for i in range(1, len(times)):
+            #    avg[i] = avg_after_time(d, times[i])
+        
+            #plt.xlabel("time t")
+            #plt.ylabel(f"average {singular[observable]}")
+            #plt.plot(times, avg)
+            #pdf.savefig()
+            #plt.close()
+
 
