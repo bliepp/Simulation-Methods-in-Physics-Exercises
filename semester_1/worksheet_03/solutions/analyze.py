@@ -45,6 +45,7 @@ if __name__ == "__main__":
 
     DT = data["dt"]
     SAMPLING_STRIDE = data["sampling_stride"]
+    plt.rcParams.update({"font.size": 14})
 
     singular = {
         "pressures": "pressure",
@@ -64,7 +65,7 @@ if __name__ == "__main__":
 
             # plot running averages
             for wsize, color in (
-                #(0, "tab:blue"),
+                (0, "tab:blue"),
                 (10,"red"), 
                 (100, "black"),
                 ):
@@ -90,19 +91,19 @@ if __name__ == "__main__":
                 else:
                     plt.legend(loc="lower right")
 
-            pdf.savefig()
+            pdf.savefig(bbox_inches="tight")
             plt.close()
 
             print(f"Plotting average of {observable}")
             # plot average
-            #avg = np.empty_like(times)
-            #for i in range(1, len(times)):
-            #    avg[i] = avg_after_time(d, times[i])
+            avg = np.empty_like(times)
+            for i in range(1, len(times)):
+                avg[i] = avg_after_time(d, times[i])
         
-            #plt.xlabel("time t")
-            #plt.ylabel(f"average {singular[observable]}")
-            #plt.plot(times, avg)
-            #pdf.savefig()
-            #plt.close()
+            plt.xlabel("time t")
+            plt.ylabel(f"average {singular[observable]}")
+            plt.plot(times, avg)
+            pdf.savefig(bbox_inches="tight")
+            plt.close()
 
 
