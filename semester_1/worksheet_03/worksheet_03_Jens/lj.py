@@ -15,6 +15,7 @@ class Simulation:
         self.n = self.x.shape[1]
         self.f = np.zeros_like(x)
         self.FMAX = FMAX
+        self.warmup = True
 
         # both r_ij_matrix and f_ij_matrix are computed in self.forces()
         self.r_ij_matrix = np.zeros((self.n, self.n, self.n_dims))
@@ -63,11 +64,17 @@ class Simulation:
         #        if abs > FMAX:
         #            self.f_ij_matrix[i, j] =  self.f_ij_matrix[i,j]/abs * FMAX
         self.f = np.sum(self.f_ij_matrix, axis=0).transpose()
-        if self.FMAX:
+        if self.FMAX and self.warmup:
+            capped = []
             for i in range(0,len(self.f)):
-                abs = scipy.linalg.norm(self.f)
-                if abs > self.FMAX:
-                    self.f[i] = self.f[i]/abs * self.FMAX
+                abs_ = scipy.linalg.norm(self.f)
+                capped.append(abs_ > self.FMAX)
+                if capped[-1]:
+                    self.f[i] = self.f[i]/abs_ * self.FMAX
+            self.warmup = any(capped)
+                    
+
+
 
         
 
@@ -202,6 +209,15 @@ if __name__ == "__main__":
     if args.cpt and os.path.exists(args.cpt):
         sim.f = f
 
+    print("Beginning Warmup")
+    counter = 0
+    while sim.warmup and args.FMAX:
+        sim.propagate()
+        if counter % SAMPLING_STRIDE == 0:
+            sim.FMAX = sim.FMAX * 1.1
+        counter += 1
+    print("Warmup finished")
+
     for i in tqdm.tqdm(range(N_TIME_STEPS)):
         sim.propagate()
 
@@ -211,7 +227,7 @@ if __name__ == "__main__":
             energies.append(np.sum(sim.energy()))
             temperatures.append(sim.temperature())
             rdfs.append(sim.rdf())
-            sim.FMAX = sim.FMAX * 1.1
+            
 
     if args.cpt:
         state = {
