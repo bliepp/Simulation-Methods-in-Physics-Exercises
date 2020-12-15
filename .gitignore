@@ -2,6 +2,8 @@
 *.log
 *.out
 *.vtf
+*.chkpt
+*.pkl
 dont_save/
 
 # ---> C
