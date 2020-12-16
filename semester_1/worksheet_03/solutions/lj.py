@@ -6,7 +6,7 @@ import pickle
 
 # introduce classes to the students
 class Simulation:
-    def __init__(self, dt, x, v, box, r_cut, shift):
+    def __init__(self, dt, x, v, box, r_cut, shift, FMAX=None):
         self.dt = dt
         self.x = x.copy()
         self.v = v.copy()
@@ -17,6 +17,9 @@ class Simulation:
         self.n_dims = self.x.shape[0]
         self.n = self.x.shape[1]
         self.f = np.zeros_like(x)
+        
+        self.FMAX = FMAX
+        self.warmup = True
 
         # both r_ij_matrix and f_ij_matrix are computed in self.forces()
         self.r_ij_matrix = np.zeros((self.n, self.n, self.n_dims))
@@ -58,6 +61,15 @@ class Simulation:
             with np.errstate(invalid='ignore'):
                 self.f_ij_matrix[:, :, dim] *= np.where(r != 0.0, fac / r, 0.0)
         self.f = np.sum(self.f_ij_matrix, axis=0).transpose()
+        
+        if self.FMAX and self.warmup:
+            capped = []
+            for i in range(0,len(self.f)):
+                abs_ = scipy.linalg.norm(self.f)
+                capped.append(abs_ > self.FMAX)
+                if capped[-1]:
+                    self.f[i] = self.f[i]/abs_ * self.FMAX
+            self.warmup = any(capped)
 
 
     def energy(self):
@@ -144,12 +156,16 @@ if __name__ == "__main__":
         type=float,
         metavar="DESIRED_TEMPERATURE",
         help="Run the simulation with velocity rescaling.")
+    parser.add_argument(
+        '--FMAX',
+        type=float,
+        help='Maximum Force during Warmup.')
     args = parser.parse_args()
 
     np.random.seed(2)
 
     DT = 0.01
-    T_MAX = 100.0
+    #T_MAX = 100.0
     T_MAX = 1000.0
     N_TIME_STEPS = int(T_MAX / DT)
 
@@ -200,6 +216,15 @@ if __name__ == "__main__":
     # If checkpoint is used, also the forces have to be reloaded!
     if args.cpt and os.path.exists(args.cpt):
         sim.forces()
+    
+    print("Beginning Warmup")
+    counter = 0
+    while sim.warmup and args.FMAX:
+        sim.propagate()
+        if counter % SAMPLING_STRIDE == 0:
+            sim.FMAX = sim.FMAX * 1.1
+        counter += 1
+    print("Warmup finished")
 
     for i in tqdm.tqdm(range(N_TIME_STEPS)):
         sim.propagate()
