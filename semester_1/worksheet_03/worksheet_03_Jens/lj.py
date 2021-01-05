@@ -110,7 +110,7 @@ class Simulation:
         return (e_kin + 0.5*force_part)/A
 
     def rdf(self):
-        #TODO
+        
         pass
 
     def propagate(self):
