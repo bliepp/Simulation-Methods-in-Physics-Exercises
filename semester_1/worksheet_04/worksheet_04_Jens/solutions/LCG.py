@@ -8,7 +8,7 @@ def LCG():
     LCG.random = (a * LCG.random + c) % m
     return LCG.random/m
 
-LCG.random=1
+LCG.random=1337
 
 #Test Generator
 #for i in range(10):
@@ -42,7 +42,7 @@ def plot():
         plt.grid(alpha=0.7,linestyle=":")
         #plt.legend(markerfirst=True,shadow=True)
         plt.tight_layout()
-        #plt.savefig("/home/jens/Desktop/GlassTransitions/plots/KoaxRef.pdf",format="pdf")
+        plt.savefig("RWalk.pdf",format="pdf")
         plt.show()
     
 plot()
