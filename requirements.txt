@@ -1,5 +1,4 @@
 tqdm
 scipy
 numpy
-numba
 matplotlib
