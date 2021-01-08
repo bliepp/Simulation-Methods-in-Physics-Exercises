@@ -17,7 +17,6 @@ def BoxMuller():
 
 #BoxMuller()
 
-#np.random.seed(69420)
 mu, sigma = 1, 4
 x = mu + sigma * np.random.randn(10000)
 
