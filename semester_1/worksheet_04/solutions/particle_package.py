@@ -21,7 +21,16 @@ STEPS = 300
 
 # Velocity Verlet and Langevin step
 def step_vv_langevin(x, v, f, dt, T, gamma):
-    # INSERT CODE HERE
+    
+    x += v * dt * (1 - dt*gamma/2) + 0.5 * f * dt * dt
+
+    v += 0.5 * f * dt
+
+    f = forces(x)
+
+    v += 0.5 * f * dt
+
+
     return x, v, f
 
 
