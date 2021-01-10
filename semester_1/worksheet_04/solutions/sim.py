@@ -4,6 +4,8 @@ import pickle
 
 import numpy as np
 
+from Mersenne import BoxMuller
+
 # SYSTEM CONSTANTS
 # timestep
 DT = 0.01
@@ -24,9 +26,17 @@ parser.add_argument('id', type=int, help='Simulation id')
 args = parser.parse_args()
 
 
+rng = BoxMuller(0, np.sqrt(2*T*GAMMA_LANGEVIN/DT))
+
+
+def generate_random_force(arr):
+    temp = np.empty_like(arr)
+    for index, _ in np.ndenumerate(temp): 
+        temp[index] = next(rng)
+    return temp
+
 def compute_temperature(v):
-    # INSERT CODE HERE
-    return
+    return (v * v).sum() / (3*N)
 
 
 def compute_energy(v):
@@ -49,11 +59,22 @@ def step_vv(x, v, f, dt):
     return x, v, f
 
 
-def step_vv_langevin(x, v, f, dt, gamma):
+def step_vv_langevin(x, v, g, dt, gamma):
+    # update positions
+    x += (v * dt)*(1- dt * gamma * 0.5) + 0.5 * g * dt * dt
 
-    # INSERT  YOUR CODE HERE
+    # half update of the velocity
+    factor = 1/(1 + dt * gamma * 0.5)
+    v *= (1 - dt * gamma * 0.5) * factor
+    v += 0.5 * g * dt * factor
 
-    return x, v, f
+    # for this excercise no forces from other particles
+    g = generate_random_force(g)
+
+    # second half update of the velocity
+    v += 0.5 * g * dt * factor
+
+    return x, v, g
 
 
 # SET UP SYSTEM OR LOAD IT
@@ -74,7 +95,7 @@ traj = []
 
 
 # main loop
-f = np.zeros_like(x)
+f = generate_random_force(x)
 
 
 print(f"Simulating until tmax={TIME_MAX}...")

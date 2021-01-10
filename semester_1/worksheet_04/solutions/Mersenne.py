@@ -44,4 +44,4 @@ def plot():
     plt.savefig("BoxMueller.pdf",format="pdf")
     #plt.show()
 
-plot()
+#plot()
