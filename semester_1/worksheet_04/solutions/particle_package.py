@@ -21,8 +21,8 @@ STEPS = 300
 
 # Velocity Verlet and Langevin step
 def step_vv_langevin(x, v, f, dt, T, gamma):
-    # INSERT CODE HERE
-    return x, v, f
+    #Insert code here
+    pass
 
 
 def plot(pos, time, color):

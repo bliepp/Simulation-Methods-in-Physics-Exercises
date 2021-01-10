@@ -11,6 +11,16 @@ def BoxMuller(mu=0, sigma=1):
         yield mu + sigma*n1
         yield mu + sigma*n2
 
+def TaskOne(N=10000):
+    rng = BoxMuller()
+    output = []
+
+    for i in range(N):
+        x = next(rng)
+        output.append(x)
+
+    return output
+
 def Gaussian(N=10000):
     rng = BoxMuller()
     output = []
@@ -25,8 +35,8 @@ def Gaussian(N=10000):
 
 
 
-def normal(x, mu=0, sigma=1):
-    return (1/(sigma*np.sqrt(2*np.pi)))**3 * (x)**2 * np.exp(-1/2*((x-mu)/sigma)**2)
+def normal(x, mu=1, sigma=4):
+    return (1/(sigma*np.sqrt(2*np.pi))) * np.exp(-1/2*((x-mu)/sigma)**2)
 
 def MB(x):
     return  4*np.pi*(1/np.sqrt(2*np.pi))**3 * x**2 * np.exp(-x**2/2)
@@ -35,13 +45,14 @@ def plot():
     n = np.linspace(0,7,100)
 
     plt.hist(Gaussian(), 25, density=True, facecolor='purple', alpha=0.75, label='RNG')
+    #plt.hist(TaskOne(), 50, density=True, facecolor='purple', alpha=0.75, label='RNG')
     plt.plot(n, MB(n), markersize='0', linestyle='solid', color='black', label='Theory curve')
     plt.xlabel(r'X')
     plt.ylabel(r'Y')
     plt.grid(alpha=0.7,linestyle=":")
-    #plt.legend(markerfirst=True,shadow=True)
+    plt.legend(markerfirst=True)
     plt.tight_layout()
-    plt.savefig("BoxMueller.pdf",format="pdf")
-    #plt.show()
+    plt.savefig("plots/MaxwellBoltzmann.pdf",format="pdf")
+    plt.show()
 
 #plot()

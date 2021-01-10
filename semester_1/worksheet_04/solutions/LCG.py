@@ -41,4 +41,4 @@ def plot(filename):
         plt.close()
 
 if __name__ == "__main__":
-    plot("RWalk.pdf")
+    plot("plots/RWalk.pdf")
