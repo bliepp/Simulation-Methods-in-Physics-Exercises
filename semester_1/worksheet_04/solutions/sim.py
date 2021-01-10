@@ -29,6 +29,7 @@ args = parser.parse_args()
 rng = BoxMuller(0, np.sqrt(2*T*GAMMA_LANGEVIN/DT))
 
 
+
 def generate_random_force(arr):
     temp = np.empty_like(arr)
     for index, _ in np.ndenumerate(temp): 

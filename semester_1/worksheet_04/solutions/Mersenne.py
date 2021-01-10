@@ -5,8 +5,8 @@ def BoxMuller(mu=0, sigma=1):
     while True:
         u1 = np.random.rand()
         u2 = np.random.rand()
-        n1 = np.sqrt(-2*np.log(u1))*np.cos(1*np.pi*u2)
-        n2 = np.sqrt(-2*np.log(u1))*np.sin(1*np.pi*u2)
+        n1 = np.sqrt(-2*np.log(u1))*np.cos(2*np.pi*u2)
+        n2 = np.sqrt(-2*np.log(u1))*np.sin(2*np.pi*u2)
 
         yield mu + sigma*n1
         yield mu + sigma*n2
