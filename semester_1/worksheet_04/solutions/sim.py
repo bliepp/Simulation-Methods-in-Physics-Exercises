@@ -33,6 +33,8 @@ def compute_energy(v):
     return (v * v).sum() / 2.
 
 
+#IMPORTANT: FOR THIS EXERCISE FORCES FROM OTHER PARTICLES ARE IGNORED
+#Forces are then only dissipative friction and the random stochastic force.
 def step_vv(x, v, f, dt):
     # update positions
     x += v * dt + 0.5 * f * dt * dt
