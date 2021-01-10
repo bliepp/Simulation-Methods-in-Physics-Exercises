@@ -55,4 +55,4 @@ def plot():
     plt.savefig("MaxwellBoltzmann.pdf",format="pdf")
     plt.show()
 
-plot()
+#plot()
