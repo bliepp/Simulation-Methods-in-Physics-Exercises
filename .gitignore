@@ -4,6 +4,7 @@
 *.vtf
 *.chkpt
 *.pkl
+*.dat.gz
 dont_save/
 
 # ---> C
