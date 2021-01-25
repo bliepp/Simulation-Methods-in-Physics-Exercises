@@ -1,6 +1,15 @@
+# tools and utilities
 tqdm
 sympy
+
+# numerical stuff
 scipy
 numpy
-numba
+
+# graphical stuff
 matplotlib
+
+# computational stuff
+numba
+cython
+pyopencl
