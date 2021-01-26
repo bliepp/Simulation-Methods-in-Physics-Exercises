@@ -15,6 +15,7 @@ class Ising():
     
     def randomize(self):
         self.__lattice = np.random.choice([1, -1], size=self.L2)
+        return self
 
     # getters and setters
     def get_spin_by_index(self, index):
@@ -22,6 +23,7 @@ class Ising():
     
     def set_spin_by_index(self, index, value):
         self.__lattice[index] = value
+        return self
 
     def get_spin(self, i, j):
         i, j = i % self.L, j % self.L
@@ -30,6 +32,7 @@ class Ising():
     def set_spin(self, i, j, value):
         i, j = i % self.L, j % self.L
         self.set_spin_by_index(i*self.L + j, value)
+        return self
     
     def flip_spin(self, i, j):
         dE = self._local_energy(i, j)

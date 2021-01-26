@@ -20,11 +20,12 @@ Ising::~Ising(){
     delete this->generator;
 }
 
-void Ising::randomize(){
+Ising& Ising::randomize(){
     std::uniform_int_distribution<int> distribution(0, 1);
     for (unsigned int i = 0; i < this->L2; i++){
         this->set_spin_by_index(i, 2*distribution(*this->generator)-1);
     }
+    return *this;
 }
 
 /*
@@ -55,17 +56,19 @@ int Ising::get_spin_by_index(int index){
     return *(this->lattice + index);
 }
 
-void Ising::set_spin_by_index(int index, int value){
+Ising& Ising::set_spin_by_index(int index, int value){
     // pointer arithmetic, equivalent of lattice[index]
     *(this->lattice + index) = value;
+    return *this;
 }
 
 int Ising::get_spin(int i, int j){
     return this->get_spin_by_index(this->index(i, j));
 }
 
-void Ising::set_spin(int i, int j, int value){
+Ising& Ising::set_spin(int i, int j, int value){
     this->set_spin_by_index(this->index(i, j), value);
+    return *this;
 }
 
 double Ising::flip_spin(int i, int j){

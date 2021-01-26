@@ -13,16 +13,16 @@ public:
     Ising(unsigned int L, bool init = true);
     ~Ising();
 
-    void randomize();
+    Ising& randomize();
 
     // getters and setters
     unsigned int get_L(){return this->L;}
     unsigned int get_L2(){return this->L2;}
 
     int get_spin_by_index(int index);
-    void set_spin_by_index(int index, int value);
+    Ising& set_spin_by_index(int index, int value);
     int get_spin(int i, int j);
-    void set_spin(int i, int j, int value);
+    Ising& set_spin(int i, int j, int value);
     double flip_spin(int i, int j);
 
     std::vector<int> get_lattice();
