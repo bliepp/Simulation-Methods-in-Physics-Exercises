@@ -13,3 +13,4 @@ matplotlib
 numba
 cython
 pyopencl
+pybind11
