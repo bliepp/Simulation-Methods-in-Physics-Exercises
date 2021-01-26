@@ -8,7 +8,9 @@ import numpy as np
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-L', help="Exercise 4", type=int)
+parser.add_argument('-L', help="Exercise 4.1", type=int)
+parser.add_argument('--mc', help="Exercise 4.2", action="store_true")
+parser.add_argument('--python', help="If set, no C++ code is used", action="store_true")
 args = parser.parse_args()
 
 TOTAL = args.L*args.L
@@ -40,7 +42,21 @@ def compute_magnetization(lattice):
             mu += get_spin(lattice, i, j)
     return mu/(args.L*args.L)
 
-def ising_exact_pure_python():
+
+def ising_exact_functional():
+    # A bit higher computational costs (~10^13 iterations)
+    # for i in range(TOTAL + 1):
+    #     lattice = np.concatenate((
+    #         np.ones(i, dtype=np.int32), # number of spin downs
+    #         -np.ones(TOTAL-i, dtype=np.int32) # number of spin up
+    #     ))
+    #     # lattices.extend(set( itertools.permutations(lattice) ) )
+    #     for lattice in set( itertools.permutations(lattice) ):
+    #         lattice = np.array(lattice).reshape(args.L, args.L)
+    #         print(lattice)
+    #         energies.append(compute_total_energy(lattice))
+    #         magnetizations.append(compute_magnetization(lattice))
+
     TMP, ENG, MAG = list(), list(), list()
 
     for T in range(10, 51):
@@ -65,6 +81,7 @@ def ising_exact_pure_python():
         MAG.append(mag_per_side * inv_Z)
     
     return TMP, ENG, MAG
+
 
 def ising_exact_oop(nopython=False):
     TMP, ENG, MAG = list(), list(), list()
@@ -99,31 +116,47 @@ def ising_exact_oop(nopython=False):
     return TMP, ENG, MAG
 
 
+def ising_metropolis(nopython=True, N=10_000):
+    TMP, ENG, MAG = list(), list(), list()
+    
+    if nopython: # c++ module
+        from ising.ising_cpp import Ising
+    else: # pure python oop
+        from ising.ising_py import Ising
+    modell = Ising(args.L, init=False)
+    modell.randomize()
+
+    for T in tqdm.tqdm(range(10, 51)):
+        kB, T = 1, T/10
+        beta = 1 / (kB*T)
+
+        acceptance_rate, e, m = modell.metropolis(10_000, beta)
+        TMP.append(T)
+        ENG.append(e)
+        MAG.append(m)
+    
+    return TMP, ENG, MAG
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
 
-    # A bit higher computational costs (~10^13 iterations)
-    # for i in range(TOTAL + 1):
-    #     lattice = np.concatenate((
-    #         np.ones(i, dtype=np.int32), # number of spin downs
-    #         -np.ones(TOTAL-i, dtype=np.int32) # number of spin up
-    #     ))
-    #     # lattices.extend(set( itertools.permutations(lattice) ) )
-    #     for lattice in set( itertools.permutations(lattice) ):
-    #         lattice = np.array(lattice).reshape(args.L, args.L)
-    #         print(lattice)
-    #         energies.append(compute_total_energy(lattice))
-    #         magnetizations.append(compute_magnetization(lattice))
+    if args.mc:
+        calc_method = ising_metropolis
+        filename = "ising_mc.pdf"
+    else:
+        calc_method = ising_exact_oop
+        filename = "ising_exact.pdf"
 
-    data = ising_exact_oop(nopython=True)
+    data = calc_method(nopython=not args.python)
     data = {
         "temperature": data[0],
         "energy_per_side": data[1],
         "mag_per_side": data[2],
     }
     
-    with PdfPages("plots/ising_exact2.pdf") as pdf:
+    with PdfPages(f"plots/{filename}") as pdf:
         plt.xlabel("Temperature T")
         plt.ylabel("Energy per side e")
         plt.plot(data["temperature"], data["energy_per_side"])
