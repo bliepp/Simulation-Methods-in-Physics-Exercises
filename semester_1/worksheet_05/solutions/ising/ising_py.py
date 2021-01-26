@@ -10,9 +10,11 @@ class Ising():
         # read-only attribute
         if init:
             self.__lattice = np.ones(self.L2, dtype=np.int32)
-            #self.__lattice = np.random.choice([1, -1], size=self.L2)
         else:
             self.__lattice = np.empty(self.L2)
+    
+    def randomize(self):
+        self.__lattice = np.random.choice([1, -1], size=self.L2)
     
     @property
     def lattice(self):
@@ -34,7 +36,10 @@ class Ising():
         self.__lattice[i*self.L + j] = value
     
     def flip_spin(self, i, j):
+        dE = self._local_energy(i, j)
         self.set_spin(i, j, -1*self.get_spin(i, j))
+        dE = self._local_energy(i, j) - dE # not sure about sign
+        return dE
     
     def _local_energy(self, i, j):
         return self.get_spin(i, j)*(
