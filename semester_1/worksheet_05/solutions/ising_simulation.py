@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-L', help="Exercise 4.1", type=int)
 parser.add_argument('--mc', help="Exercise 4.2", action="store_true")
 parser.add_argument('--python', help="If set, no C++ code is used", action="store_true")
+parser.add_argument('--noplot', help="If set, no C++ code is used", action="store_true")
 args = parser.parse_args()
 
 TOTAL = args.L*args.L
@@ -139,9 +140,6 @@ def ising_metropolis(nopython=True, N=10_000):
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from matplotlib.backends.backend_pdf import PdfPages
-
     if args.mc:
         calc_method = ising_metropolis
         filename = "ising_mc.pdf"
@@ -155,16 +153,20 @@ if __name__ == "__main__":
         "energy_per_side": data[1],
         "mag_per_side": data[2],
     }
-    
-    with PdfPages(f"plots/{filename}") as pdf:
-        plt.xlabel("Temperature T")
-        plt.ylabel("Energy per side e")
-        plt.plot(data["temperature"], data["energy_per_side"])
-        pdf.savefig(bbox_inches="tight")
-        plt.close()
 
-        plt.xlabel("Temperature T")
-        plt.ylabel("Magnetization per side m")
-        plt.plot(data["temperature"], data["mag_per_side"])
-        pdf.savefig(bbox_inches="tight")
-        plt.close()
+    if not args.noplot:
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
+    
+        with PdfPages(f"plots/{filename}") as pdf:
+            plt.xlabel("Temperature T")
+            plt.ylabel("Energy per side e")
+            plt.plot(data["temperature"], data["energy_per_side"])
+            pdf.savefig(bbox_inches="tight")
+            plt.close()
+
+            plt.xlabel("Temperature T")
+            plt.ylabel("Magnetization per side m")
+            plt.plot(data["temperature"], data["mag_per_side"])
+            pdf.savefig(bbox_inches="tight")
+            plt.close()
