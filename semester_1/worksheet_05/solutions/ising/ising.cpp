@@ -42,7 +42,7 @@ int Ising::get_spin(int i, int j){
     return *(this->lattice + this->index(i,j));
 }
 
-float Ising::flip_spin(int i, int j){
+void Ising::flip_spin(int i, int j){
     this->set_spin(i, j, -1*this->get_spin(i, j));
 }
 

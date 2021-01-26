@@ -15,7 +15,7 @@ public:
     // setters and setters
     void set_spin(int i, int j, int value);
     int get_spin(int i, int j);
-    float flip_spin(int i, int j);
+    void flip_spin(int i, int j);
 
     unsigned int get_L(){return this->L;}
     unsigned int get_L2(){return this->L2;}
