@@ -40,7 +40,7 @@ def compute_magnetization(lattice):
             mu += get_spin(lattice, i, j)
     return mu/(args.L*args.L)
 
-def ising_pure_python():
+def ising_exact_pure_python():
     TMP, ENG, MAG = list(), list(), list()
 
     for T in range(10, 51):
@@ -66,13 +66,13 @@ def ising_pure_python():
     
     return TMP, ENG, MAG
 
-def ising_oop(nopython=False):
+def ising_exact_oop(nopython=False):
     TMP, ENG, MAG = list(), list(), list()
 
     if nopython: # c++ module
-        from ising.cpp import Ising
+        from ising.ising_cpp import Ising
     else: # pure python oop
-        from ising.py import Ising
+        from ising.ising_py import Ising
     modell = Ising(args.L)
 
     for T in range(10, 51):
@@ -116,14 +116,14 @@ if __name__ == "__main__":
     #         energies.append(compute_total_energy(lattice))
     #         magnetizations.append(compute_magnetization(lattice))
 
-    data = ising_oop(nopython=True)
+    data = ising_exact_oop(nopython=True)
     data = {
         "temperature": data[0],
         "energy_per_side": data[1],
         "mag_per_side": data[2],
     }
     
-    with PdfPages("plots/ising_exact.pdf") as pdf:
+    with PdfPages("plots/ising_exact2.pdf") as pdf:
         plt.xlabel("Temperature T")
         plt.ylabel("Energy per side e")
         plt.plot(data["temperature"], data["energy_per_side"])

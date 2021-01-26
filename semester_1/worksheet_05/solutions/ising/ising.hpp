@@ -16,28 +16,31 @@ public:
     void randomize();
 
     // getters and setters
-    void set_spin_by_index(int index, int value);
-    int get_spin_by_index(int index);
-    void set_spin(int i, int j, int value);
-    int get_spin(int i, int j);
-    float flip_spin(int i, int j);
-
     unsigned int get_L(){return this->L;}
     unsigned int get_L2(){return this->L2;}
 
-    void set_lattice(std::vector<int> &v);
+    int get_spin_by_index(int index);
+    void set_spin_by_index(int index, int value);
+    int get_spin(int i, int j);
+    void set_spin(int i, int j, int value);
+    double flip_spin(int i, int j);
+
     std::vector<int> get_lattice();
+    void set_lattice(std::vector<int> &v);
 
     // compute properties
-    float local_energy(int i, int j);
-    float energy();
-    float magnetization();
+    double local_energy(int i, int j);
+    double energy();
+    double magnetization();
+
+    // simulate
+    std::vector<double> metropolis(unsigned int steps, double beta = 0);
 
 protected:
     // internal helpers
     int index(int i, int j);
-    int get_i(int index);
-    int get_j(int index);
+    int get_i(unsigned int index);
+    int get_j(unsigned int index);
 
     int *lattice; // heap allocated
 
@@ -46,8 +49,6 @@ protected:
     unsigned int L2;
 
     std::mt19937 *generator;
-    // std::uniform_int_distribution<int> distribution(0,1); // randomly chooses spin up or down
-    std::uniform_int_distribution<int> *choose_element;
 };
 
 #endif

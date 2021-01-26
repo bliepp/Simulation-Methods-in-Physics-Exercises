@@ -31,5 +31,8 @@ PYBIND11_MODULE(ising_cpp, m){
 		// methods and functions
 		.def("_local_energy", &Ising::local_energy, "Local energy at position i,j",
 			py::arg("i"), py::arg("j"))
+		// simulate
+		.def("metropolis", &Ising::metropolis, "Calculate n metropolis steps and return acceptance rate, <e>, <|mu|>",
+			py::arg("steps"), py::arg("beta"))
 		;
 }

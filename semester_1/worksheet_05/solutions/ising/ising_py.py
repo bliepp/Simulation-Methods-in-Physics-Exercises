@@ -15,7 +15,28 @@ class Ising():
     
     def randomize(self):
         self.__lattice = np.random.choice([1, -1], size=self.L2)
+
+    # getters and setters
+    def get_spin_by_index(self, index):
+        return self.__lattice[index]
     
+    def set_spin_by_index(self, index, value):
+        self.__lattice[index] = value
+
+    def get_spin(self, i, j):
+        i, j = i % self.L, j % self.L
+        return self.get_spin_by_index(i*self.L + j)
+
+    def set_spin(self, i, j, value):
+        i, j = i % self.L, j % self.L
+        self.set_spin_by_index(i*self.L + j, value)
+    
+    def flip_spin(self, i, j):
+        dE = self._local_energy(i, j)
+        self.set_spin(i, j, -1*self.get_spin(i, j))
+        dE = self._local_energy(i, j) - dE # not sure about sign
+        return dE
+
     @property
     def lattice(self):
         return self.__lattice
@@ -27,20 +48,7 @@ class Ising():
         else:
             raise IndexError(f"New list must be L*L = {self.L2} elements long")
     
-    def get_spin(self, i, j):
-        i, j = i % self.L, j % self.L
-        return self.__lattice[i*self.L + j]
-    
-    def set_spin(self, i, j, value):
-        i, j = i % self.L, j % self.L
-        self.__lattice[i*self.L + j] = value
-    
-    def flip_spin(self, i, j):
-        dE = self._local_energy(i, j)
-        self.set_spin(i, j, -1*self.get_spin(i, j))
-        dE = self._local_energy(i, j) - dE # not sure about sign
-        return dE
-    
+    # compute properties
     def _local_energy(self, i, j):
         return self.get_spin(i, j)*(
             self.get_spin(i-1, j)
@@ -64,3 +72,26 @@ class Ising():
             for j in range(self.L):
                 mu += self.get_spin(i, j)
         return mu/(self.L2)
+    
+    # simulate
+    def metropolis(self, steps, beta = 0):
+        accepted, e, m = 0, 0, 0
+
+        E = self.energy
+        for _ in range(steps):
+            r = np.random.rand() # 0..1
+            pos = np.random.randint(0, self.L, size=2) # i, j
+
+            dE = self.flip_spin(*pos)
+            condition = r < min(1, np.exp(-beta * dE))
+
+            accepted += condition
+            E += dE*condition
+
+            e += E * np.exp(-beta * E)
+            m += abs(self.magnetization) * np.exp(-beta * E)
+
+            if not condition:
+                self.flip_spin(*pos)
+        
+        return accepted/steps, e/steps/self.L2, m/steps

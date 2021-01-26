@@ -1,10 +1,12 @@
 #include "ising.hpp"
+#include <algorithm>
+#include <numeric>
+#include <cmath>
 
 Ising::Ising(unsigned int L, bool init): L(L), L2(L*L){
     // heap allocated because of dynamic size
     this->lattice = new int[this->L2]; // don't forget deleting!
     this->generator = new std::mt19937();
-    this->choose_element = new std::uniform_int_distribution<int>(0, this->L2);
 
     if (init){
         for (unsigned int i = 0; i < this->L2; i++){
@@ -16,7 +18,6 @@ Ising::Ising(unsigned int L, bool init): L(L), L2(L*L){
 Ising::~Ising(){
     delete this->lattice;
     delete this->generator;
-    delete this->choose_element;
 }
 
 void Ising::randomize(){
@@ -38,40 +39,45 @@ int Ising::index(int i, int j){
         + (j < 0)*this->L; // correcting remainder to modulo for j
 }
 
-int Ising::get_i(int index){
+int Ising::get_i(unsigned int index){
     return index / this->L; // int division
 }
 
-int Ising::get_j(int index){
+int Ising::get_j(unsigned int index){
     return index % this->L; // int division
 }
 
 /*
  * GETTERS AND SETTERS
  */
-void Ising::set_spin_by_index(int index, int value){
-    // pointer arithmetic, equivalent of lattice[index]
-    *(this->lattice + index) = value;
-}
-
 int Ising::get_spin_by_index(int index){
     // pointer arithmetic, equivalent of lattice[index]
     return *(this->lattice + index);
 }
 
-void Ising::set_spin(int i, int j, int value){
-    this->set_spin_by_index(this->index(i, j), value);
+void Ising::set_spin_by_index(int index, int value){
+    // pointer arithmetic, equivalent of lattice[index]
+    *(this->lattice + index) = value;
 }
 
 int Ising::get_spin(int i, int j){
     return this->get_spin_by_index(this->index(i, j));
 }
 
-float Ising::flip_spin(int i, int j){
-    float dE = this->local_energy(i, j);
+void Ising::set_spin(int i, int j, int value){
+    this->set_spin_by_index(this->index(i, j), value);
+}
+
+double Ising::flip_spin(int i, int j){
+    double dE = this->local_energy(i, j);
     this->set_spin(i, j, -1*this->get_spin(i, j));
     dE = this->local_energy(i, j) - dE;
     return dE;
+}
+
+std::vector<int> Ising::get_lattice(){
+    std::vector<int> v(this->lattice, this->lattice + this->L2);
+    return v;//py::array(v.size(), v.data());
 }
 
 void Ising::set_lattice(std::vector<int> &v){
@@ -83,15 +89,10 @@ void Ising::set_lattice(std::vector<int> &v){
     }
 }
 
-std::vector<int> Ising::get_lattice(){
-    std::vector<int> v(this->lattice, this->lattice + this->L2);
-    return v;//py::array(v.size(), v.data());
-}
-
 /*
  * COMPUTE PROPERTIES
  */
-float Ising::local_energy(int i, int j){
+double Ising::local_energy(int i, int j){
     return this->get_spin(i,j)*(
         this->get_spin(i-1, j)
         + this->get_spin(i+1, j)
@@ -100,8 +101,8 @@ float Ising::local_energy(int i, int j){
     );
 }
 
-float Ising::energy(){
-    float total = 0;
+double Ising::energy(){
+    double total = 0;
     for (unsigned int i = 0; i < this->L; i++){
     for (unsigned int j = 0; j < this->L; j++){
         total += this->local_energy(i, j);
@@ -110,12 +111,44 @@ float Ising::energy(){
     return 0.5 * total;
 }
 
-float Ising::magnetization(){
-    float mu = 0;
+double Ising::magnetization(){
+    double mu = 0;
     for (unsigned int i = 0; i < this->L; i++){
     for (unsigned int j = 0; j < this->L; j++){
         mu += this->get_spin(i, j);
     }
     }
     return mu/this->L2;
+}
+
+/*
+ * SIMULATE
+ */
+std::vector<double> Ising::metropolis(unsigned int steps, double beta){ //std = sexually transmitted desease
+    std::uniform_real_distribution<float> r_dist(0.0, 1.0);
+    std::uniform_int_distribution<int> choose_element(0, this->L2);
+
+    double accepted = 0.0, e = 0.0, m = 0.0;
+
+    double E = this->energy();
+    for (unsigned int step = 0; step < steps; step++){
+        float r = r_dist(*this->generator);
+        int index = choose_element(*this->generator);
+        int i = this->get_i(index), j = this->get_j(index);
+
+        double dE = this->flip_spin(i, j);
+        bool condition = r < std::min(1.0, std::exp(-beta*dE));
+
+        accepted += condition;
+        E += dE*condition;
+
+        e += E * std::exp(-beta * E);
+        m += abs(this->magnetization()) * std::exp(-beta * E);
+
+        if (!condition){
+            this->flip_spin(i, j); // flip back to previous state
+        }
+    }
+
+    return std::vector<double>({accepted/steps, e/steps/this->L2, m/steps});
 }
