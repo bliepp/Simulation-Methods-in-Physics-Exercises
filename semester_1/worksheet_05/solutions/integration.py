@@ -1,20 +1,18 @@
 #!/usr/bin/env python
+import argparse
 import numpy as np
 from sympy import *
 from sympy.utilities.lambdify import implemented_function, lambdify
-
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-import argparse
-from numba import jit
+from sampling import simple_sampling
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--simple', help="Exercise 2", action="store_true")
 parser.add_argument('--test', help="Testing mode", action="store_true")
 args = parser.parse_args()
 
-from sampling import simple_sampling
 
 #def f(x):
  #   return (-2*x*x * np.sin(x) * np.cos(x) - 2*x* np.sin(x)*np.sin(x)) * np.exp(-x*x * np.sin(x) * np.sin(x))
@@ -60,6 +58,7 @@ def plot_simple():
 if __name__ == "__main__":
     if args.simple:
         plot_simple()
+
     if args.test:
         for _ in range(10):
             print(simple_sampling(lambda x: x, 0, 1, 1_000_000))

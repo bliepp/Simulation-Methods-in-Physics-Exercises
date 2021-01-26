@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import numpy as np
 
 
@@ -18,10 +19,13 @@ def metropolis(N, P, trial_move, phi0):
     phi = phi0
     out, acceptance = list(), 0
     for i in range(N):
-        phi_ = trial_move(phi)
+        phi_new = trial_move(phi)
         r = np.random.rand()
-        if r < min(1, P(phi_)/P(phi)):
-            phi = phi_
-            accept +=1
+
+        # branchless if condition because we can
+        condition = r < min(1, P(phi_new)/P(phi))
+        phi = (condition)*phi_new + (not condition)*phi
+        acceptance += condition
+
         out.append(phi)
-    return np.array(out), accept/N
+    return np.array(out), acceptance/N
