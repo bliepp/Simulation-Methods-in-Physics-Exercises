@@ -37,12 +37,12 @@ class Ising():
         self.set_spin(i, j, -1*self.get_spin(i, j))
     
     def _local_energy(self, i, j):
-        return 0.5 * (self.get_spin(i, j)*(
+        return self.get_spin(i, j)*(
             self.get_spin(i-1, j)
             + self.get_spin(i+1, j)
             + self.get_spin(i, j-1)
             + self.get_spin(i, j+1)
-        ))
+        )
     
     @property
     def energy(self):
@@ -50,7 +50,7 @@ class Ising():
         for i in range(self.L):
             for j in range(self.L):
                 total += self._local_energy(i, j)
-        return total
+        return 0.5 * total
     
     @property
     def magnetization(self):

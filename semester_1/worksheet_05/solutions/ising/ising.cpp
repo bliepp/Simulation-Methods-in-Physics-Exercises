@@ -42,7 +42,7 @@ int Ising::get_spin(int i, int j){
     return *(this->lattice + this->index(i,j));
 }
 
-void Ising::flip_spin(int i, int j){
+float Ising::flip_spin(int i, int j){
     this->set_spin(i, j, -1*this->get_spin(i, j));
 }
 
@@ -62,7 +62,7 @@ std::vector<int> Ising::get_lattice(){
 
 // compute properties
 float Ising::local_energy(int i, int j){
-    return 0.5 * this->get_spin(i,j)*(
+    return this->get_spin(i,j)*(
         this->get_spin(i-1, j)
         + this->get_spin(i+1, j)
         + this->get_spin(i, j-1)
@@ -77,7 +77,7 @@ float Ising::energy(){
         total += this->local_energy(i, j);
     }
     }
-    return total;
+    return 0.5 * total;
 }
 
 float Ising::magnetization(){
