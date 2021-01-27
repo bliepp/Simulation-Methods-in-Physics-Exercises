@@ -6,17 +6,16 @@ A python package for simulating the 2D Ising model.
 * Python drop-in replacement as fallback
 
 ## Installation
-Since this package is not uploaded to PyPI, it cannot be installed with pip. Instead you have to compile and package it manually. That isn't dificult. Just execute the following build command in the current directory:
+Since this package is not uploaded to PyPI, it cannot be installed with pip directly. Instead you have to compile and package it manually. That isn't dificult. Just execute the following build command in the current directory and install it locally with pip (with python beeing python3):
 ```
-python[3] setup.py sdist bdist_wheel
+python setup.py bdist_wheel
+pip install dist/ising*.whl
 ```
-Next, you have to install it locally via pip:
+
+If you want to install using legacy package format instead of the wheel packaging format, use:
 ```
-pip[3] install dist/ising*.whl
-```
-If you want to install using legacy package format (not wheel), use:
-```
-pip[3] install dist/ising*.tar.gz
+python setup.py sdist
+pip install dist/ising*.tar.gz
 ```
 
 ## Updating
