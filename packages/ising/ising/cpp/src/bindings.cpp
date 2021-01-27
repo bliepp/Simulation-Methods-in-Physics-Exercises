@@ -1,11 +1,19 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
 #include "ising.hpp"
+
+#define STRINGIFY(x) #x
+
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(ising_cpp, m){
+PYBIND11_MODULE(__ising, m){
+#ifdef VERSION_INFO
+    m.attr("__version__") = STRINGIFY(VERSION_INFO);
+#else
+    m.attr("__version__") = "dev";
+#endif
+
 	py::class_<Ising>(m, "Ising")
 		// initializing
 		.def(py::init<unsigned int, bool>(),

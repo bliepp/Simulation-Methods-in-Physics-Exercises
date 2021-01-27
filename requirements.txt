@@ -1,4 +1,5 @@
 # tools and utilities
+wheel
 tqdm
 sympy
 
