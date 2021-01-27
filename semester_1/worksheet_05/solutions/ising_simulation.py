@@ -88,9 +88,9 @@ def ising_exact_oop(nopython=False):
     TMP, ENG, MAG = list(), list(), list()
 
     if nopython: # c++ module
-        from ising.ising_cpp import Ising
+        from ising.cpp import Ising
     else: # pure python oop
-        from ising.ising_py import Ising
+        from ising.py import Ising
     modell = Ising(args.L)
 
     for T in range(10, 51):
