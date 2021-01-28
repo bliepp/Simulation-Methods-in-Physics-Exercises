@@ -19,9 +19,11 @@ class Ising():
 
     # getters and setters
     def get_spin_by_index(self, index):
+        index = index % self.L2
         return self.__lattice[index]
     
     def set_spin_by_index(self, index, value):
+        index = index % self.L2
         self.__lattice[index] = value
         return self
 

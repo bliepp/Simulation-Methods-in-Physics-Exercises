@@ -34,7 +34,7 @@ public:
     double magnetization();
 
     // simulate
-    std::vector<double> metropolis(unsigned int steps, double beta = 0);
+    std::vector<double> metropolis(unsigned int steps, double beta = 0.0);
 
 protected:
     // internal helpers

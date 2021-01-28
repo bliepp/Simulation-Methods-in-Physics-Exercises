@@ -52,11 +52,17 @@ int Ising::get_j(unsigned int index){
  * GETTERS AND SETTERS
  */
 int Ising::get_spin_by_index(int index){
+    index = index % this->L2; // remainder
+    index += (index < 0)*this->L2; // correction to modulo
+
     // pointer arithmetic, equivalent of lattice[index]
     return *(this->lattice + index);
 }
 
 Ising& Ising::set_spin_by_index(int index, int value){
+    index = index % this->L2; // remainder
+    index += (index < 0)*this->L2; // correction to modulo
+
     // pointer arithmetic, equivalent of lattice[index]
     *(this->lattice + index) = value;
     return *this;
@@ -85,10 +91,11 @@ std::vector<int> Ising::get_lattice(){
 
 void Ising::set_lattice(std::vector<int> &v){
     if (v.size() != this->L2){
-        throw py::index_error("New list must be L*L = " + std::to_string(this->L2) + " elements long");
+        //throw py::index_error("New list must be L*L = " + std::to_string(this->L2) + " elements long");
+        throw std::out_of_range("New list must be L*L = " + std::to_string(this->L2) + " elements long");
     }
     for (size_t i = 0; i < v.size(); i++){
-        *(this->lattice + i) = v[i];
+        this->set_spin_by_index(i, v[i]);
     }
 }
 
