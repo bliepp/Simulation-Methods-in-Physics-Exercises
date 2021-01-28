@@ -4,6 +4,7 @@ A python package for simulating the 2D Ising model.
 ## Features
 * C++ extension written with pybind11
 * Python drop-in replacement as fallback
+
 The C++ part of the code has no dependency on pybind11 or the Python.h (except for the python bindings, obviously). This means that you are not limited to use python and may use this code in C++, too.
 
 ## Reqirements
