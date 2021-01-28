@@ -1,12 +1,7 @@
 #ifndef ISING_H
 #define ISING_H
-#include <pybind11/pybind11.h>
-//#include <pybind11/numpy.h>
-//#include <pybind11/stl.h>
 #include <vector>
 #include <random>
-
-namespace py = pybind11;
 
 class Ising {
 public:

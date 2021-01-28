@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <iostream>
 
 Ising::Ising(unsigned int L, bool init): L(L), L2(L*L){
     // heap allocated because of dynamic size
@@ -52,7 +53,7 @@ int Ising::get_j(unsigned int index){
  * GETTERS AND SETTERS
  */
 int Ising::get_spin_by_index(int index){
-    index = index % this->L2; // remainder
+    index = index % static_cast<int>(this->L2); // remainder, casting because L2 is unsigned
     index += (index < 0)*this->L2; // correction to modulo
 
     // pointer arithmetic, equivalent of lattice[index]
@@ -60,7 +61,7 @@ int Ising::get_spin_by_index(int index){
 }
 
 Ising& Ising::set_spin_by_index(int index, int value){
-    index = index % this->L2; // remainder
+    index = index % static_cast<int>(this->L2); // remainder, casting because L2 is unsigned
     index += (index < 0)*this->L2; // correction to modulo
 
     // pointer arithmetic, equivalent of lattice[index]
@@ -86,12 +87,11 @@ double Ising::flip_spin(int i, int j){
 
 std::vector<int> Ising::get_lattice(){
     std::vector<int> v(this->lattice, this->lattice + this->L2);
-    return v;//py::array(v.size(), v.data());
+    return v;
 }
 
 void Ising::set_lattice(std::vector<int> &v){
     if (v.size() != this->L2){
-        //throw py::index_error("New list must be L*L = " + std::to_string(this->L2) + " elements long");
         throw std::out_of_range("New list must be L*L = " + std::to_string(this->L2) + " elements long");
     }
     for (size_t i = 0; i < v.size(); i++){
