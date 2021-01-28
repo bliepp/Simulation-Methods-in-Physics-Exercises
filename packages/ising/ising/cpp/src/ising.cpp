@@ -33,8 +33,9 @@ Ising& Ising::randomize(){
  * INTERNAL HELPERS
  */
 int Ising::index(int i, int j){
-    i = i % this->L; // not modulo, it's a remainder!
-    j = j % this->L; // overiding local instance of variable
+    // not modulo, it's a remainder!
+    i = i % static_cast<int>(this->L); // casting because L is unsigned
+    j = j % static_cast<int>(this->L); // overiding local instance of variable
 
     return i * this->L + j
         + (i < 0)*this->L*this->L // correcting remainder to modulo for i
