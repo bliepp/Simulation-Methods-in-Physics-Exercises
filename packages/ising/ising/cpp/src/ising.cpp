@@ -159,8 +159,7 @@ std::vector<double> Ising::metropolis(unsigned int steps, double beta){ //std = 
         // no exp(-beta * E), because p = exp(-beta*E)/Z is chosen
         // see https://en.wikipedia.org/wiki/Monte_Carlo_method_in_statistical_physics#Importance_sampling
         e += E;
-        m += abs(this->magnetization());
+        m += std::abs(this->magnetization());
     }
-
     return std::vector<double>({accepted/steps, e/steps/this->L2, m/steps});
 }

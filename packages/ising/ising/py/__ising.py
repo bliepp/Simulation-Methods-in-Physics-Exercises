@@ -73,9 +73,8 @@ class Ising():
     @property
     def magnetization(self):
         mu = 0
-        for i in range(self.L):
-            for j in range(self.L):
-                mu += self.get_spin(i, j)
+        for index in range(self.L2):
+            mu += self.get_spin_by_index(index)
         return mu/(self.L2)
     
     # simulate
@@ -100,5 +99,5 @@ class Ising():
             # see https://en.wikipedia.org/wiki/Monte_Carlo_method_in_statistical_physics#Importance_sampling
             e += E
             m += abs(self.magnetization)
-        
+
         return accepted/steps, e/steps/self.L2, m/steps

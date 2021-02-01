@@ -64,22 +64,23 @@ def ising_exact_functional():
         kB, T = 1, T/10
         beta = 1 / (kB*T)
         
-        energy_per_side, mag_per_side = 0, 0
+        energy_per_side, mag_per_side, partition_function = 0.0, 0.0, 0.0
         lattices = itertools.product(*[(-1,1)]*args.L*args.L)
+        length = 1 << (args.L*args.L) # binary representation of lattice -> 2^(L*L) possiblilities
 
-        inv_Z = 1/len(list(deepcopy(lattices)))
-        for lattice in tqdm.tqdm(lattices, total=1/inv_Z, desc=f"T = {T}"):
+        for lattice in tqdm.tqdm(lattices, total=length, desc=f"T = {T}"):
             lattice = np.array(lattice).reshape(args.L, args.L)
             energy = compute_total_energy(lattice)
             magnetization = compute_magnetization(lattice)
 
             # <A> = SUM A*exp(-beta H) / Z
             energy_per_side += energy * np.exp(-beta * energy)
-            mag_per_side += abs(magnetization) * np.exp(-beta * energy) 
+            mag_per_side += abs(magnetization) * np.exp(-beta * energy)
+            partition_function += np.exp(-beta * energy)
         
         TMP.append(T)
-        ENG.append(energy_per_side * inv_Z / TOTAL)
-        MAG.append(mag_per_side * inv_Z)
+        ENG.append(energy_per_side / partition_function / TOTAL)
+        MAG.append(mag_per_side / partition_function)
     
     return TMP, ENG, MAG
 
@@ -97,11 +98,11 @@ def ising_exact_oop(nopython=False):
         kB, T = 1, T/10
         beta = 1 / (kB*T)
         
-        energy_per_side, mag_per_side = 0, 0
+        energy_per_side, mag_per_side, partition_function = 0.0, 0.0, 0.0
         lattices = itertools.product(*[(-1,1)]*modell.L2)
+        length = 1 << (args.L*args.L) # binary representation of lattice -> 2^(L*L) possiblilities
 
-        inv_Z = 1/len(list(deepcopy(lattices)))
-        for lattice in tqdm.tqdm(lattices, total=1/inv_Z, desc=f"T = {T}"):
+        for lattice in tqdm.tqdm(lattices, total=length, desc=f"T = {T}"):
             modell.lattice = lattice
             energy = modell.energy
             magnetization = modell.magnetization
@@ -109,10 +110,11 @@ def ising_exact_oop(nopython=False):
             # <A> = SUM A*exp(-beta H) / Z
             energy_per_side += energy * np.exp(-beta * energy)
             mag_per_side += abs(magnetization) * np.exp(-beta * energy) 
-        
+            partition_function += np.exp(-beta * energy)
+
         TMP.append(T)
-        ENG.append(energy_per_side * inv_Z / TOTAL)
-        MAG.append(mag_per_side * inv_Z)
+        ENG.append(energy_per_side / partition_function / TOTAL)
+        MAG.append(mag_per_side / partition_function)
     
     return TMP, ENG, MAG
 
