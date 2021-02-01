@@ -93,10 +93,12 @@ class Ising():
             accepted += condition
             E += dE*condition
 
-            e += E * np.exp(-beta * E)
-            m += abs(self.magnetization) * np.exp(-beta * E)
-
             if not condition:
                 self.flip_spin(*pos)
+
+            # no np.exp(-beta * E)because p = exp(-beta*E)/Z is chosen
+            # see https://en.wikipedia.org/wiki/Monte_Carlo_method_in_statistical_physics#Importance_sampling
+            e += E
+            m += abs(self.magnetization)
         
         return accepted/steps, e/steps/self.L2, m/steps

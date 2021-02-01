@@ -124,10 +124,8 @@ double Ising::energy(){
 
 double Ising::magnetization(){
     double mu = 0;
-    for (unsigned int i = 0; i < this->L; i++){
-    for (unsigned int j = 0; j < this->L; j++){
-        mu += this->get_spin(i, j);
-    }
+    for (unsigned int i = 0; i < this->L2; i++){
+        mu += this->get_spin_by_index(i);
     }
     return mu/this->L2;
 }
@@ -153,12 +151,15 @@ std::vector<double> Ising::metropolis(unsigned int steps, double beta){ //std = 
         accepted += condition;
         E += dE*condition;
 
-        e += E * std::exp(-beta * E);
-        m += abs(this->magnetization()) * std::exp(-beta * E);
 
         if (!condition){
             this->flip_spin(i, j); // flip back to previous state
         }
+
+        // no exp(-beta * E), because p = exp(-beta*E)/Z is chosen
+        // see https://en.wikipedia.org/wiki/Monte_Carlo_method_in_statistical_physics#Importance_sampling
+        e += E;
+        m += abs(this->magnetization());
     }
 
     return std::vector<double>({accepted/steps, e/steps/this->L2, m/steps});
