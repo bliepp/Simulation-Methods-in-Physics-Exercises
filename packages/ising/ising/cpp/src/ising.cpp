@@ -104,7 +104,7 @@ void Ising::set_lattice(std::vector<int> &v){
  * COMPUTE PROPERTIES
  */
 double Ising::local_energy(int i, int j){
-    return this->get_spin(i,j)*(
+    return -this->get_spin(i,j)*(
         this->get_spin(i-1, j)
         + this->get_spin(i+1, j)
         + this->get_spin(i, j-1)

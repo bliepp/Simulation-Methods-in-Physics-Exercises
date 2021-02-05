@@ -55,7 +55,7 @@ class Ising():
     
     # compute properties
     def _local_energy(self, i, j):
-        return self.get_spin(i, j)*(
+        return -self.get_spin(i, j)*(
             self.get_spin(i-1, j)
             + self.get_spin(i+1, j)
             + self.get_spin(i, j-1)
