@@ -51,7 +51,7 @@ public:
 
   // Recalculate the energy from the state of the Ising model
   void recalculate_energy() {
-    double m_E = 0;
+    m_E = 0;
     for (int i = 0; i<m_l; i++) {
     for (int j = 0; j<m_l; j++) {
       m_E +=  -get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) ) * 0.5;

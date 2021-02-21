@@ -84,7 +84,7 @@ class TestCython(TestStrategy):
             "Bruteforce magnetization calculation failed.")
 
 
-class TestOwn():#TestStrategy):
+class TestOwn(TestStrategy):
     @classmethod
     def setUpClass(cls):
         super(TestOwn, cls).setUpClass()
