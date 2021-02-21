@@ -18,7 +18,7 @@ template <typename T> T mod(T a, T b) {
 class Ising {
 public:
   // Constructor
-  Ising(double beta, int l) {
+  Ising(double beta, unsigned int l) {
     // Seed the random number generator
     m_rng.seed(42);
 
@@ -43,10 +43,10 @@ public:
   void recalculate_magnetization() {
     double m_M = 0;
     for (auto &i : m_data) {
-      m_M += i
+      m_M += i;
     }
     assert((m_M >= -m_l * m_l) and (m_M <= m_l * m_l));
-    return m_M/(m_l * m_l);
+    //return m_M/(m_l * m_l);
   };
 
   // Recalculate the energy from the state of the Ising model
@@ -57,7 +57,7 @@ public:
       m_E +=  -get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) ) * 0.5;
     }
     }
-    return m_E;
+    //return m_E;
   };
 
   // Update running values for energy and magnetization
@@ -108,24 +108,42 @@ public:
   // Try flipping a random spin. Return true if move accepted
   // If move was accepted, also update energy and magnetization
   bool try_random_flip() {
-    // TODO 
     // Try a single flip on a randomly chosen
     // spin. Re-use (don't copy) existing code.
     // Return true/false depending on whether the move was accepted
+    int i = random_int(m_l);
+    int j = random_int(m_l);
     double r = random_double();
     double dE = 2 * get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) );
     bool condition = r < std::min(1.0, std::exp(-m_beta * dE));
 
     if (condition) {
-      
+      int spin = get(i,j); // Spin at i,j
+      spin = spin * (-1); // Flip spin
+      set(i,j,spin); // Set new spin at i,j
+      update();
     }
     return condition;
   };
 
-  void try_many_random_flips(int n) {
-    // TODO
+  void try_many_random_flips(unsigned int n) {
     // Try n moves at randomly chosen spins.
     // Re-use (don't copy) existing code!
+    for (unsigned int p = 0; p < n; p++){
+      int i = random_int(m_l);
+      int j = random_int(m_l);
+      double r = random_double();
+      double dE = 2 * get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) );
+      bool condition = r < std::min(1.0, std::exp(-m_beta * dE));
+
+      if (condition) {
+        int spin = get(i,j); // Spin at i,j
+        spin = spin * (-1); // Flip spin
+        set(i,j,spin); // Set new spin at i,j
+        update();
+      }
+      //return condition;
+    }
   }
 
   // Get the current energy
@@ -177,7 +195,7 @@ private:
   int get_linear_index(int i, int j) {
     i = mod(i,m_l);
     j = mod(j,m_l);
-    index = i * m_l + j;
+    int index = i * m_l + j;
     return index;
   };
 };
