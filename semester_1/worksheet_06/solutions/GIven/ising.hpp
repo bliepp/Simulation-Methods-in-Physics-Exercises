@@ -112,6 +112,14 @@ public:
     // Try a single flip on a randomly chosen
     // spin. Re-use (don't copy) existing code.
     // Return true/false depending on whether the move was accepted
+    double r = random_double();
+    double dE = 2 * get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) );
+    bool condition = r < std::min(1.0, std::exp(-m_beta * dE));
+
+    if (condition) {
+      
+    }
+    return condition;
   };
 
   void try_many_random_flips(int n) {
