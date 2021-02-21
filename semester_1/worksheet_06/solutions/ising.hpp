@@ -29,10 +29,9 @@ public:
     // Setup data field to a random state
     m_data.resize(l * l);
 
+    // Fill m_data with random states
     for (auto &i : m_data) {
-      // TODO
-      // YOUR CODE HERE: fill the Ising model by randomly setting
-      // each site to +1 or -1
+      i = random_int(2) * 2 - 1;
       assert((i == 1) or (i == -1));
     };
 
@@ -42,17 +41,23 @@ public:
 
   // Recalculate the energy from the state of the Ising model
   void recalculate_magnetization() {
-    // TODO
-    // Calculate the magnetization of the system and sotre it in
-    // m_M
+    double m_M = 0;
+    for (auto &i : m_data) {
+      m_M += i
+    }
     assert((m_M >= -m_l * m_l) and (m_M <= m_l * m_l));
+    return m_M/(m_l * m_l);
   };
 
   // Recalculate the energy from the state of the Ising model
   void recalculate_energy() {
-    // TODO
-    // Calculate the energy of the Ising model
-    // and store it in m_E
+    double m_E;
+    for (unsigned int i = 0; i<m_l; i++) {
+    for (unsigned int j = 0; j<m_l; j++) {
+      m_E +=  -get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) ) * 0.5;
+    }
+    }
+    return m_E;
   };
 
   // Update running values for energy and magnetization
@@ -85,12 +90,19 @@ public:
   // Try to flip a spin and return true if move accepted,
   // update magnetization/energy if move was accepted
   bool try_flip(int i, int j) {
-    // TODO 
-    // perform a single trial move at position i,j.
-    // Decide based on the metropolis criterion whether to accept the flip
-    // If it is accepted, update the model in m_data and update the
-    // running values for magnetization and energy (m_M and m_E)
-    // Return true or false depending on whether the move is accepted
+    // Metropolis Criterion
+    double r = random_double();
+    double dE = 2 * get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) );
+    bool condition = r < std::min(1.0, std::exp(-m_beta * dE));
+
+    // Spin Flip if condition was accepted
+    if (condition) {
+      int spin = get(i,j); // Spin at i,j
+      spin = spin * (-1); // Flip spin
+      set(i,j,spin); // Set new spin at i,j
+      update();
+    }
+    return condition;
   };
 
   // Try flipping a random spin. Return true if move accepted
@@ -155,11 +167,9 @@ private:
 
   // Convert 2d indices from 0<=i,j<l to linear index 0<ind<l*l
   int get_linear_index(int i, int j) {
-    // TODO
-    // Convert the 2d index (i,j) to a linear index ind
-    // the m_data vector, such tht the mapping is unique.
-
-    // index = ...
+    i = mod(i,m_l);
+    j = mod(j,m_l);
+    index = i * m_l + j;
     return index;
   };
 };
