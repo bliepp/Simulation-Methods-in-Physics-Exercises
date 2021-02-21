@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <random>
+#include <iostream>
 #include <vector>
 
 // Negative numerb proof modulo
@@ -18,7 +19,7 @@ template <typename T> T mod(T a, T b) {
 class Ising {
 public:
   // Constructor
-  Ising(double beta, unsigned int l) {
+  Ising(double beta, int l) {
     // Seed the random number generator
     m_rng.seed(42);
 
@@ -41,23 +42,21 @@ public:
 
   // Recalculate the energy from the state of the Ising model
   void recalculate_magnetization() {
-    double m_M = 0;
+    m_M = 0;
     for (auto &i : m_data) {
       m_M += i;
     }
     assert((m_M >= -m_l * m_l) and (m_M <= m_l * m_l));
-    //return m_M/(m_l * m_l);
   };
 
   // Recalculate the energy from the state of the Ising model
   void recalculate_energy() {
-    double m_E;
-    for (unsigned int i = 0; i<m_l; i++) {
-    for (unsigned int j = 0; j<m_l; j++) {
+    double m_E = 0;
+    for (int i = 0; i<m_l; i++) {
+    for (int j = 0; j<m_l; j++) {
       m_E +=  -get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) ) * 0.5;
     }
     }
-    //return m_E;
   };
 
   // Update running values for energy and magnetization
@@ -113,37 +112,14 @@ public:
     // Return true/false depending on whether the move was accepted
     int i = random_int(m_l);
     int j = random_int(m_l);
-    double r = random_double();
-    double dE = 2 * get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) );
-    bool condition = r < std::min(1.0, std::exp(-m_beta * dE));
-
-    if (condition) {
-      int spin = get(i,j); // Spin at i,j
-      spin = spin * (-1); // Flip spin
-      set(i,j,spin); // Set new spin at i,j
-      update();
-    }
-    return condition;
+    return try_flip(i, j);
   };
 
-  void try_many_random_flips(unsigned int n) {
+  void try_many_random_flips(int n) {
     // Try n moves at randomly chosen spins.
     // Re-use (don't copy) existing code!
-    for (unsigned int p = 0; p < n; p++){
-      int i = random_int(m_l);
-      int j = random_int(m_l);
-      double r = random_double();
-      double dE = 2 * get(i,j) * ( get(i-1,j) + get(i+1,j) + get(i,j-1) + get(i,j+1) );
-      bool condition = r < std::min(1.0, std::exp(-m_beta * dE));
-
-      if (condition) {
-        int spin = get(i,j); // Spin at i,j
-        spin = spin * (-1); // Flip spin
-        set(i,j,spin); // Set new spin at i,j
-        update();
-      }
-      //return condition;
-    }
+    for (int p = 0; p < n; p++)
+      try_random_flip();
   }
 
   // Get the current energy
