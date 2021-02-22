@@ -3,8 +3,14 @@ import tqdm
 import itertools
 import gzip
 import pickle
+import argparse
 import numpy as np
 from ising import Ising
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--exact", help="Additionaly run exact simulation for L=4" ,action="store_true")
+args = parser.parse_args()
 
 
 def exact(L=4):
@@ -39,12 +45,22 @@ def exact(L=4):
 def metropolis(L=4):
         TMP, ENG, MAG = list(), list(), list()
         model = Ising(L, init=False)
+        MEANS, VALUES = 100, 1_000
 
+        Tc = 2/(np.log(1+np.sqrt(2)))
         for T in tqdm.tqdm(range(10, 51), desc=f"(Metro L={L:02}) "):
-            e, m = np.empty(500, dtype=float), np.empty(500, dtype=float)
-            for i in range(500):
+            randmax = 1- T*0.1 / (2*Tc)
+            e, m = np.empty(MEANS, dtype=float), np.empty(MEANS, dtype=float)
+            for i in range(MEANS):
+
+                # Ensure that we reach the important parts for T < Tc
+                # --> Fill on average 70% of all lattice points with spin +1
                 model.randomize()
-                _, e[i], m[i] = model.metropolis(500, 10.0/T)
+                for j in range(model.L2):
+                    if np.random.random() < randmax:
+                        model.set_spin_by_index(j, 1)
+
+                _, e[i], m[i] = model.metropolis(VALUES, 10.0/T)
 
             TMP.append(T*0.1)
             ENG.append( (np.mean(e), np.std(e)) )
@@ -67,5 +83,13 @@ def save(L, method, TMP, ENG, MAG):
 
 
 if __name__ == "__main__":
-    for L, method in [(4, exact), (16, metropolis), (64, metropolis)]:
+    runs = []
+    if args.exact:
+        runs.append((4, exact))
+    else:
+        runs.append((4, metropolis))
+        runs.append((16, metropolis))
+        runs.append((64, metropolis))
+    
+    for L, method in runs:
         save(L, method.__name__, *method(L))
