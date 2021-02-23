@@ -6,11 +6,21 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 paths = [
-    ("L_64_metropolis.dat.gz", "tab:orange"),
-    ("L_16_metropolis.dat.gz", "tab:green"),
-    ("L_4_metropolis.dat.gz", "tab:grey"),
+    ("L_64_metropolis_N_100000.dat.gz", "tab:orange"),
+    ("L_16_metropolis_N_100000.dat.gz", "tab:green"),
+    #("L_4_metropolis_N_100000.dat.gz", "tab:grey"),
     ("L_4_exact.dat.gz", "tab:blue"),
     ]
+
+
+def analytical_magnetization():
+    kwargs = dict(
+        linewidth=0.7, linestyle='solid', color="tab:red")
+    
+    T_1 = np.linspace(1.0, 2/(np.log(1+np.sqrt(2))), 1000)
+    T_2 = np.linspace(2/(np.log(1+np.sqrt(2))), 5.1, 1000)
+    plt.plot(T_1, (1-np.sinh(2/T_1)**(-4))**(1./8), label=r'L$\rightarrow \infty$, analytically', **kwargs)
+    plt.plot(T_2, np.zeros_like(T_2), **kwargs)
 
 
 def plot(pdf, mode, label):
@@ -19,12 +29,10 @@ def plot(pdf, mode, label):
 
     for path, color in paths:
         data = load_data(path)
-        plt.errorbar(data["TMP"], data[mode][0], data[mode][1], None, '.', capsize= 1.4, linewidth=0.7, label=f"L = {data['L']}, {data['METHOD']}", color=color)
+        plt.errorbar(data["TMP"], data[mode][0], data[mode][1], None, '.-', capsize= 1.4, linewidth=0.7, label=f"L = {data['L']}, {data['METHOD']}", color=color)
     
     if mode == "MAG":
-        xrange = np.linspace(1, 2.275, 41_000)
-        func = lambda T: np.power((1-np.sinh(2/T)**(-4)), 1/8)
-        plt.plot(xrange, func(xrange), label="Analytical Solution", linewidth=0.7, linestyle='solid', color="tab:red")
+        analytical_magnetization()
     
     plt.grid(alpha=0.7,linestyle=":")
     plt.legend()

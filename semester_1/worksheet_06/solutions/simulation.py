@@ -43,30 +43,30 @@ def exact(L=4):
 
 
 def metropolis(L=4):
-        TMP, ENG, MAG = list(), list(), list()
-        model = Ising(L, init=False)
-        MEANS, VALUES = 100, 1_000
+    TMP, ENG, MAG = list(), list(), list()
+    model = Ising(L, init=False)
+    MEANS, VALUES = 100, 100_000
 
-        Tc = 2/(np.log(1+np.sqrt(2)))
-        for T in tqdm.tqdm(range(10, 51), desc=f"(Metro L={L:02}) "):
-            randmax = 1- T*0.1 / (2*Tc)
-            e, m = np.empty(MEANS, dtype=float), np.empty(MEANS, dtype=float)
-            for i in range(MEANS):
+    Tc = 2/(np.log(1+np.sqrt(2)))
+    for T in tqdm.tqdm(range(10, 51), desc=f"(Metro L={L:02}) "):
+        randmax = 1- T*0.1 / (2*Tc)
+        e, m = np.empty(MEANS, dtype=float), np.empty(MEANS, dtype=float)
+        for i in range(MEANS):
 
-                # Ensure that we reach the important parts for T < Tc
-                # --> Fill on average 70% of all lattice points with spin +1
-                model.randomize()
-                for j in range(model.L2):
-                    if np.random.random() < randmax:
-                        model.set_spin_by_index(j, 1)
+            # Ensure that we reach the important parts for T < Tc
+            # --> Fill on average 70% of all lattice points with spin +1
+            model.randomize()
+            for j in range(model.L2):
+                if np.random.random() < randmax:
+                    model.set_spin_by_index(j, 1)
 
-                _, e[i], m[i] = model.metropolis(VALUES, 10.0/T)
+            _, e[i], m[i] = model.metropolis(VALUES, 10.0/T)
 
-            TMP.append(T*0.1)
-            ENG.append( (np.mean(e), np.std(e)) )
-            MAG.append( (np.mean(m), np.std(m)) )
-        
-        return np.array(TMP), np.array(ENG).T, np.array(MAG).T
+        TMP.append(T*0.1)
+        ENG.append( (np.mean(e), np.std(e)) )
+        MAG.append( (np.mean(m), np.std(m)) )
+
+    return np.array(TMP), np.array(ENG).T, np.array(MAG).T
 
 
 
